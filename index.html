@@ -512,7 +512,7 @@ function adapt(L, ch, P){
   if(P.r > 0 && polys.length){ polys = fatten(fatten(fatten(polys, -P.r), 2 * P.r), -P.r); }
   var w = Math.max(80, w0 + 1.2 * P.d);
   if(P.st > 0 && P.sty && P.sty.tm && polys.length) polys = reshapeEnds(polys, P.sty.tm, Math.min(1, P.st / 100));
-  if(P.st > 0 && P.sty && polys.length){ polys = stylize(polys, P.sty, P.st / 100, ch.codePointAt(0), P.xT); w = Math.max(80, w + 2 * P.st / 100 * thHV(P.sty.th)[0]); }
+  if(P.st > 0 && P.sty && polys.length){ var kt = thSafe(L, P, P.st / 100); polys = stylize(polys, P.sty, P.st / 100, ch.codePointAt(0), P.xT, null, kt); w = Math.max(80, w + 2 * kt * thHV(P.sty.th)[0]); }
   return {w: w, polys: polys};
 }
 /* tcomp: compiled target glyphs (traced). Returns fitted parameters for donor L. */
@@ -803,12 +803,37 @@ function fattenXY(polys, dh, dv){
 }
 function stPhase(n){ var x = Math.sin(n * 12.9898) * 43758.5453; return (x - Math.floor(x)) * 6.2832; }
 /* Y: measured style {th, sl, wa, f}. k: strength (1 = as measured). Each part can be switched off through on = {th, sl, wa, f}. */
-function stylize(polys, Y, k, seed, xT, on){
+function holesOf(P){ return P.filter(function(p){ var a = 0; for(var i = 0; i < p.length; i++){ var q = p[(i + 1) % p.length]; a += p[i][0] * q[1] - q[0] * p[i][1]; } return a < 0; }).length; }
+/* a change of stroke weight breaks a letter when a counter closes up or a stroke splits */
+function thPass(src, dh, dv){ var r = fattenXY(src, dh, dv); return r.length > 0 && holesOf(r) >= holesOf(src) && r.length <= src.length; }
+/* the strongest weight change, up to k, that the witness letters of the font all stand (one letter may fail) :
+   the same dose is then given to every letter, so that the weight stays even across the font */
+var THSAFE = {key: '', lv: {}, base: null}, THTEST = 'abdeghkmnpqrsuwxyzABEGHKMNRS';
+function thSafe(L, P, k){
+  var hv = thHV(P.sty.th); if(Math.abs(hv[0]) < 1 && Math.abs(hv[1]) < 1) return k;
+  var M = P.mix, key = [L.id, P.sx, P.d, P.r, P.xD, P.aD, P.xT, P.aT, M ? [M.id, M.t, M.dA, M.d].join('/') : '', P.sty.th.join('/')].join('|');
+  if(THSAFE.key !== key) THSAFE = {key: key, lv: {}, base: null};
+  if(!THSAFE.base){ var P0 = {sx: P.sx, d: P.d, r: P.r, xD: P.xD, aD: P.aD, xT: P.xT, aT: P.aT, mix: P.mix, st: 0, sty: null}; THSAFE.base = Array.from(THTEST).map(function(c){ var a = adapt(L, c, P0); return a && a.polys.length ? a.polys : null; }).filter(Boolean); }
+  var base = THSAFE.base, lv = [k].concat([1.5, 1.25, 1, 0.8, 0.6, 0.45, 0.3, 0.2, 0.1].filter(function(v){ return v < k; }));
+  for(var i = 0; i < lv.length; i++){
+    var v = lv[i], id = String(Math.round(v * 1000));
+    if(!(id in THSAFE.lv)){ var bad = 0; for(var j = 0; j < base.length && bad < 2; j++) if(!thPass(base[j], v * hv[0], v * hv[1])) bad++; THSAFE.lv[id] = bad < 2; }
+    if(THSAFE.lv[id]) return v;
+  }
+  return Math.min(k, 0.1);
+}
+/* kt : strength of the weight change when it is set for the whole font (see thSafe) ; without it, k is used */
+function stylize(polys, Y, k, seed, xT, on, kt){
   if(!polys.length || !Y || !(k > 0)) return polys;
   on = on || {th: 1, sl: 1, wa: 1, f: 1};
   var src = polys;
   /* thickness: vertical strokes and horizontal strokes are thickened or thinned separately, by a true outline offset */
-  if(on.th){ var hv = thHV(Y.th); polys = fattenXY(polys, k * hv[0], k * hv[1]); if(!polys.length) return src; }
+  if(on.th){
+    var hv = thHV(Y.th), kk = kt === undefined ? k : kt;
+    /* last resort for a letter outside the witness set : its own weight change is halved until it stands */
+    if(kt !== undefined) while(kk > 0.12 && !thPass(polys, kk * hv[0], kk * hv[1])) kk /= 2;
+    polys = fattenXY(polys, kk * hv[0], kk * hv[1]); if(!polys.length) return src;
+  }
   var b = pbox(polys), bw = (b.x1 - b.x0) || 1, useF = on.f && Y.f && (b.y1 - b.y0) > 0.45 * xT, sl = on.sl ? Y.sl : 0, out = [];
   if(!useF && !(on.wa && Y.wa)) out = sl ? polys.map(function(p){ return p.map(function(q){ return [q[0] + k * sl * q[1], q[1]]; }); }) : polys;
   else polys.forEach(function(p, pi){
@@ -822,10 +847,10 @@ function stylize(polys, Y, k, seed, xT, on){
       return [x + k * sl * y, y];
     }));
   });
-  var res = unionPos(out), holes = function(P){ return P.filter(function(p){ var a = 0; for(var i = 0; i < p.length; i++){ var q = p[(i + 1) % p.length]; a += p[i][0] * q[1] - q[0] * p[i][1]; } return a < 0; }).length; };
+  var res = unionPos(out), holes = holesOf;
   if(!res.length) return src;
   /* a counter closed up or a stroke broke: retry at half strength */
-  if((holes(res) < holes(src) || res.length > src.length) && k > 0.12) return stylize(src, Y, k / 2, seed, xT, on);
+  if((holes(res) < holes(src) || res.length > src.length) && k > 0.12) return stylize(src, Y, k / 2, seed, xT, on, kt);
   return res;
 }
 /* ---------- stroke ends : shape of the attacks (top of the stems) and of the terminals (feet, free ends of strokes) ----------
@@ -1653,6 +1678,18 @@ $('x-go').onclick = async function(){
   } catch(e){ setStatus(st, 'La bibliothèque de polices n\'a pas pu être chargée. Recharge la page et réessaie.', 'err'); }
   finally { renderCross(); }
 };
+/* the traced letters brought to the scale of piste A, and their style measured on it */
+function ownMeasure(A, glyphes){
+  var L = LIBMAP[A.donneur.id], tc = getComp(prep({glyphes: glyphes})), tg = function(c){ return tc[c]; }, P = donorP(A), k = 0;
+  var tx = topOf(tg, XL), ta = topOf(tg, AL), tcap = topOf(tg, CL_), lc = topOf(function(c){ return adapt(L, c, P); }, CL_);
+  if(isFinite(tx)) k = P.xT / tx; else if(isFinite(ta)) k = P.aT / ta; else if(isFinite(tcap) && isFinite(lc)) k = lc / tcap;
+  if(!(k > 0)) return null;
+  var tcl = {}; Object.keys(glyphes).forEach(function(c){ if(tc[c] && tc[c].polys.length) tcl[c] = {w: tc[c].w * k, polys: tc[c].polys.map(function(p){ return p.map(function(q){ return [q[0] * k, q[1] * k]; }); })}; });
+  var Q = {sx: P.sx, d: P.d, r: P.r, xD: P.xD, aD: P.aD, xT: P.xT, aT: P.aT, mix: P.mix}, keys = Object.keys(tcl).filter(function(c){ var g = libGlyph(L, c); return g && g.polys.length; });
+  /* gap between the stroke weight of the traced letters and the one of the piste, on the letters they share */
+  var gap = keys.length ? med(keys.map(function(c){ return strokeW(unionNZ(tcl[c].polys)); })) - med(keys.map(function(c){ return strokeW(adapt(L, c, Q).polys); })) : 0;
+  return {L: L, Q: Q, tcl: tcl, gap: gap, Y: measureStyle(L, tcl, Q, true)};
+}
 $('x-own').onclick = async function(){
   var st = $('x-status'), A = pistes[+$('x-c').value]; if(!A || !A.donneur) return;
   if(!shapes.some(function(s){ return s.ch; })){ setStatus(st, 'Aucune lettre détourée pour l\'instant. Va dans l\'onglet Reproduire, dépose l\'image de tes lettres et indique lesquelles (étapes 1 à 3), puis reviens ici.', 'err'); return; }
@@ -1661,19 +1698,31 @@ $('x-own').onclick = async function(){
   this.disabled = true; setStatus(st, 'Mesure du caractère de tes lettres', 'busy');
   try {
     await ensureFonts(donIds(A));
-    var L = LIBMAP[A.donneur.id]; if(!L) throw new Error('lib');
-    var tc = getComp(prep({glyphes: glyphes})), tg = function(c){ return tc[c]; }, P = donorP(A), k = 0;
-    var tx = topOf(tg, XL), ta = topOf(tg, AL), tcap = topOf(tg, CL_), lc = topOf(function(c){ return adapt(L, c, P); }, CL_);
-    if(isFinite(tx)) k = P.xT / tx; else if(isFinite(ta)) k = P.aT / ta; else if(isFinite(tcap) && isFinite(lc)) k = lc / tcap;
-    if(!(k > 0)){ setStatus(st, 'Tes lettres détourées ne permettent pas de caler l\'échelle : indique au moins une lettre minuscule ou capitale.', 'err'); return; }
-    /* traced letters brought to the scale of the piste, then the style is measured exactly as in the Reproduire tab */
-    var tcl = {}; Object.keys(glyphes).forEach(function(c){ if(tc[c] && tc[c].polys.length) tcl[c] = {w: tc[c].w * k, polys: tc[c].polys.map(function(p){ return p.map(function(q){ return [q[0] * k, q[1] * k]; }); })}; });
-    var Q = {sx: P.sx, d: P.d, r: P.r, xD: P.xD, aD: P.aD, xT: P.xT, aT: P.aT, mix: P.mix}, Y = measureStyle(L, tcl, Q, true), has = Y.wa || Y.sl || Y.f || Y.tm || Y.th.some(function(v){ return v; });
+    if(!LIBMAP[A.donneur.id]) throw new Error('lib');
+    var m = ownMeasure(A, glyphes), swap = '';
+    if(!m){ setStatus(st, 'Tes lettres détourées ne permettent pas de caler l\'échelle : indique au moins une lettre minuscule ou capitale.', 'err'); return; }
+    /* when the family exists in another weight that sits closer to the traced letters, the report starts from that weight :
+       a real font carries most of the weight, and little is left to correct by calculation */
+    if(!A.donneur.mix && Math.abs(m.gap) >= 8){
+      var sib = IDX.fonts.filter(function(f){ return f[1] === m.L.nom && f[0] !== m.L.id; });
+      if(sib.length){
+        await ensureFonts(sib.map(function(f){ return f[0]; }));
+        var best = null;
+        sib.forEach(function(f){
+          var L2 = LIBMAP[f[0]]; if(!L2) return;
+          var B = pisteFrom(L2, A.categorie, '', 0, A.donneur.sx, null, null); B.donneur.xh = A.donneur.xh; B.donneur.r = A.donneur.r; B.inclinaison = A.inclinaison; B.espacement = A.espacement; B = prep(strip(B));
+          var m2 = ownMeasure(B, glyphes); if(m2 && m2.Y.gain && Math.abs(m2.gap) < Math.abs(best ? best.m.gap : m.gap) - 2) best = {m: m2, B: B};
+        });
+        if(best){ swap = m.L.nom + ' ' + m.L.graisse + ' remplacée par ' + best.m.L.nom + ' ' + best.m.L.graisse; best.B.description = best.B.description.replace(/\.$/, '') + ', graisse de la famille la plus proche de tes lettres.'; A = {nom: A.nom, categorie: A.categorie, description: best.B.description, inclinaison: best.B.inclinaison, espacement: best.B.espacement, metriques: best.B.metriques, donneur: best.B.donneur}; m = best.m; }
+      }
+    }
+    var Y = m.Y, tcl = m.tcl, has = Y.wa || Y.sl || Y.f || Y.tm || Y.th.some(function(v){ return v; });
     if(!Y.gain){ setStatus(st, 'Aucune de tes lettres détourées (' + Object.keys(tcl).join(' ') + ') n\'existe dans cette structure : rien à mesurer.', 'err'); return; }
-    if(!has){ setStatus(st, 'Aucun trait de style mesurable à reporter sur cette piste avec ces lettres (' + Object.keys(tcl).join(' ') + ').', 'err'); return; }
+    if(!has && !swap){ setStatus(st, 'Aucun trait de style mesurable à reporter sur cette piste avec ces lettres (' + Object.keys(tcl).join(' ') + ').', 'err'); return; }
     var D = JSON.parse(JSON.stringify(A.donneur)); D.sty = Y; D.st = 100;
     addPiste(prep({nom: (A.nom + ', à ta main').slice(0, 40), categorie: A.categorie, description: A.description.replace(/ Caractère de tes lettres.*$/, '') + ' Caractère de tes lettres (' + Object.keys(tcl).join(' ') + ') reporté par mesure.', inclinaison: A.inclinaison, espacement: A.espacement, metriques: A.metriques, glyphes: {}, donneur: D}));
-    setStatus(st, styleNote(Y).replace('sur la donneuse', 'sur la piste').replace('Curseur « caractère reporté » pour doser.', 'Développe la nouvelle piste : le curseur « caractère reporté » de l\'atelier dose le report.'));
+    var dose = thSafe(m.L, {sx: m.Q.sx, d: m.Q.d, r: m.Q.r, xD: m.Q.xD, aD: m.Q.aD, xT: m.Q.xT, aT: m.Q.aT, mix: m.Q.mix, sty: Y}, 1);
+    setStatus(st, (swap ? 'Graisse de départ : ' + swap + ', plus proche de tes lettres. ' : '') + styleNote(Y).replace('sur la donneuse', 'sur la piste').replace('Curseur « caractère reporté » pour doser.', 'Développe la nouvelle piste : le curseur « caractère reporté » de l\'atelier dose le report.') + (dose < 1 ? ' Le changement de graisse est limité à ' + Math.round(dose * 100) + ' % de la mesure, à l\'identique sur toutes les lettres : au-delà, des lettres de cette structure se cassent.' : ''));
   } catch(e){ setStatus(st, 'La bibliothèque de polices n\'a pas pu être chargée. Recharge la page et réessaie.', 'err'); }
   finally { this.disabled = false; }
 };
