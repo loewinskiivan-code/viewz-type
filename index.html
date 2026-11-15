@@ -214,6 +214,7 @@ footer{margin-top:40px;padding-top:12px;border-top:1px solid var(--line);font:40
       <div class="brief" id="brief"></div>
       <div class="row">
         <button class="accent" id="gen" type="button">Générer 4 pistes</button>
+        <button class="ghost" id="gen-ai" type="button">Dessiner 4 pistes avec l'IA</button>
         <div class="status" id="gen-status" role="status"></div>
       </div>
     </section>
@@ -1110,6 +1111,8 @@ function pisteCard(p, i){
   return '<article class="card"><div class="row" style="justify-content:space-between"><h4>' + esc(p.nom) + '</h4><span class="tag">' + esc(p.categorie || p.plume.forme) + '</span></div><div class="spec">' + textSVG(p, word, 62, false) + '</div><p>' + esc(p.description) + '</p><button type="button" class="ghost" data-dev="' + i + '">Développer cette piste</button></article>';
 }
 function renderPistes(){
+  var need = pistes.filter(function(p){ return p.donneur && !LIBMAP[p.donneur.id]; }).map(function(p){ return p.donneur.id; });
+  if(need.length && !renderPistes.busy){ renderPistes.busy = true; ensureFonts(need).then(function(){ renderPistes.busy = false; if(need.some(function(id){ return LIBMAP[id]; })) renderPistes(); }, function(){ renderPistes.busy = false; }); }
   $('pistes').innerHTML = pistes.map(pisteCard).join('');
   $('pistes-ex').hidden = !pistesAreExamples;
 }
@@ -1172,8 +1175,69 @@ $('specimen').parentNode.querySelector('details').addEventListener('toggle', fun
 var rz = 0; window.addEventListener('resize', function(){ clearTimeout(rz); rz = setTimeout(function(){ if(!$('view-creation').hidden) renderSpecimen(); }, 150); });
 function renderAll(){ renderPistes(); renderAtelier(); }
 
-/* ---- generate pistes ---- */
+/* ---- generate pistes : by code, on the structure of real free fonts (no AI) ----
+   Each family of the brief points to reference fonts of the library (Google Fonts, OFL).
+   A piste is one of them, adjusted by measure to the weight and width asked for. */
+var REFS = {
+  'Linéale': ['Inter', 'Work Sans', 'Manrope', 'Archivo', 'Public Sans', 'Figtree', 'DM Sans', 'Sora', 'Hanken Grotesk', 'Barlow', 'Rubik', 'Karla'],
+  'Géométrique': ['Poppins', 'Montserrat', 'Jost', 'Outfit', 'Urbanist', 'Questrial', 'Lexend', 'Raleway', 'Kumbh Sans', 'League Spartan', 'Red Hat Display', 'Syne'],
+  'Empattements': ['EB Garamond', 'Cormorant Garamond', 'Lora', 'Merriweather', 'Libre Baskerville', 'Crimson Pro', 'Source Serif 4', 'Spectral', 'Fraunces', 'Newsreader', 'Literata', 'Vollkorn'],
+  'Mécane': ['Zilla Slab', 'Arvo', 'Rokkitt', 'Bitter', 'Alfa Slab One', 'Josefin Slab', 'Hepta Slab', 'Crete Round', 'Bevan', 'Slabo 27px'],
+  'Didone': ['Playfair Display', 'Bodoni Moda', 'Abril Fatface', 'DM Serif Display', 'Prata', 'Rozha One', 'Chonburi', 'Gloock', 'Oranienbaum', 'Playfair'],
+  'Médiévale gothique': ['UnifrakturMaguntia', 'Grenze Gotisch', 'Pirata One', 'UnifrakturCook', 'Texturina', 'New Rocker', 'Manufacturing Consent', 'Fruktur', 'Germania One', 'Metal Mania', 'Almendra', 'Astloch', 'MedievalSharp', 'Kings'],
+  'Onciale': ['Uncial Antiqua', 'Macondo', 'Eagle Lake', 'Metamorphous', 'Macondo Swash Caps', 'Cinzel Decorative', 'Quintessential', 'Milonga', 'Almendra Display', 'Caudex'],
+  'Chancelière': ['Tangerine', 'Pinyon Script', 'Great Vibes', 'Italianno', 'Petit Formal Script', 'Alex Brush', 'Allura', 'Cormorant Upright', 'Felipa', 'Niconne', 'Rouge Script', 'Lovers Quarrel'],
+  'Manuscrite': ['Caveat', 'Kalam', 'Patrick Hand', 'Indie Flower', 'Shadows Into Light', 'Handlee', 'Gloria Hallelujah', 'Reenie Beanie', 'Architects Daughter', 'Covered By Your Grace'],
+  'Pinceau': ['Caveat Brush', 'Kaushan Script', 'Pacifico', 'Knewave', 'Lobster', 'Damion', 'Marck Script', 'Mansalva', 'Nothing You Could Do'],
+  'Graffiti': ['Sedgwick Ave Display', 'Sedgwick Ave', 'Bangers', 'Finger Paint', 'Londrina Solid', 'Protest Guerrilla', 'Protest Revolution', 'Rammetto One', 'Bungee', 'Faster One'],
+  'Art déco': ['Poiret One', 'Limelight', 'Federo', 'Monoton', 'Fascinate', 'Josefin Sans', 'Forum', 'Cinzel', 'Marcellus', 'Italiana', 'Megrim', 'Tenor Sans', 'Julius Sans One', 'Righteous', 'Diplomata'],
+  'Stencil': ['Stardos Stencil', 'Allerta Stencil', 'Saira Stencil One', 'Black Ops One', 'Big Shoulders Stencil', 'Sirin Stencil', 'Stick No Bills', 'Emblema One', 'Wallpoet', 'Keania One', 'Plaster'],
+  'Monospace': ['JetBrains Mono', 'IBM Plex Mono', 'Space Mono', 'Roboto Mono', 'Source Code Pro', 'Fira Code', 'Courier Prime', 'Inconsolata', 'DM Mono', 'Anonymous Pro', 'Cutive Mono', 'Share Tech Mono']
+};
+var genRound = 0;
+/* the library entry of a family whose weight is the closest to the one asked for */
+function refEntry(nom, want){
+  var best = null;
+  IDX.fonts.forEach(function(f){ if(f[1] === nom && (!best || Math.abs(f[2] - want) < Math.abs(best[2] - want))) best = f; });
+  return best;
+}
+function pisteFrom(L, label, letter, want, sx){
+  var lg = function(c){ return libGlyph(L, c); }, lx = topOf(lg, 'x') || topOf(lg, XL), la = topOf(lg, 'l') || topOf(lg, AL), lc = topOf(lg, 'H') || topOf(lg, CL_);
+  if(!isFinite(lx)) lx = isFinite(lc) ? lc * 0.7 : 500; if(!isFinite(la)) la = isFinite(lc) ? lc : lx * 1.4; if(!(la > lx + 20)) la = lx + 20; if(!isFinite(lc)) lc = la;
+  /* what the real font cannot give (no such weight in the library) is added by measure : kept moderate so that counters stay open */
+  var d = want ? clamp(Math.round((want - L.graisse) * 0.05), -18, 20, 0) : 0, adj = [];
+  if(Math.abs(d) < 5) d = 0;
+  if(d) adj.push(d > 0 ? 'graisse renforcée' : 'graisse allégée');
+  if(sx !== 1) adj.push(sx < 1 ? 'chasse resserrée' : 'chasse élargie');
+  return prep({nom: label + ' ' + letter, categorie: label, description: 'Construite sur la structure de ' + L.nom + ' ' + L.graisse + ', police libre sous licence OFL' + (adj.length ? ' : ' + adj.join(', ') : '') + '.',
+    metriques: {cap: lc, x: lx, asc: la + 30, desc: -220}, glyphes: {}, donneur: {id: L.id, sx: sx, d: d, r: 0, xD: lx, aD: la, xT: lx, aT: la, xh: 100, st: 0}});
+}
 $('gen').onclick = async function(){
+  var st = $('gen-status'), btn = this;
+  btn.disabled = true; setStatus(st, 'Recherche de quatre structures dans la bibliothèque de polices libres', 'busy');
+  try {
+    await loadLib();
+    var all = Object.keys(REFS), fams = sel.famille.filter(function(f){ return REFS[f]; });
+    if(!fams.length) for(var k = 0; k < 4; k++) fams.push(all[(genRound * 4 + k * 3 + 1) % all.length]);
+    var want = {Fine: 200, Normale: 400, Grasse: 700, Noire: 900}[sel.graisse[0]] || 0, sx = {'Étroite': 0.82, Large: 1.22}[sel.largeur[0]] || 1;
+    var picks = [], used = {};
+    for(var i = 0; i < 4; i++){
+      var fam = fams[i % fams.length], refs = REFS[fam], turn = Math.floor(i / fams.length) + genRound, e = null;
+      for(var j = 0; j < refs.length && !e; j++){ var nom = refs[(turn + j) % refs.length]; if(!used[nom]){ e = refEntry(nom, want || 400); if(e) used[nom] = 1; } }
+      if(e) picks.push({e: e, fam: fam});
+    }
+    genRound++;
+    await ensureFonts(picks.map(function(p){ return p.e[0]; }));
+    var list = picks.filter(function(p){ return LIBMAP[p.e[0]]; }).map(function(p, n){ return pisteFrom(LIBMAP[p.e[0]], p.fam, 'ABCD'.charAt(n), want, sx); });
+    if(!list.length) throw new Error('lib');
+    pistes = list; pistesAreExamples = false; renderPistes(); save();
+    setStatus(st, list.length + ' pistes construites par calcul sur de vraies polices libres, sans IA. Choisis celle à développer, ou relance pour en voir d\'autres.' + (sel.ambiance.length || $('precisions').value.trim() ? ' L\'ambiance et tes précisions ne servent qu\'au dessin par l\'IA.' : ''));
+  } catch(e){ setStatus(st, 'La bibliothèque de polices n\'a pas pu être chargée. Recharge la page et réessaie.', 'err'); }
+  finally { btn.disabled = false; }
+};
+
+/* ---- generate pistes : drawn by the AI (optional) ---- */
+$('gen-ai').onclick = async function(){
   var st = $('gen-status'), btn = this, sample = await getSample();
   if(!sample){ setStatus(st, NO_AI, 'err'); return; }
   var word = ($('mot').value.trim() || 'VIEWZ'), set = Array.from(new Set(Array.from(word.replace(/\s/g, '')))).slice(0, 12);
@@ -1251,6 +1315,13 @@ async function runGroups(base, groups){
   else setStatus(st, img ? 'Lettres manquantes dessinées par l\'IA dans l\'esprit des originales. C\'est une approximation : compare avec tes lettres détourées.' : 'Alphabet complet prêt. Ajuste la plume avec les curseurs, puis télécharge.');
 }
 function develop(p){
+  if(p.donneur){
+    font = prep(JSON.parse(JSON.stringify({nom: p.nom, categorie: p.categorie, description: p.description, metriques: p.metriques, glyphes: {}, donneur: p.donneur})));
+    fontIsExample = false; missing = []; cache = {}; $('fname').value = font.nom; $('try').value = $('mot').value.trim() || 'VIEWZ';
+    renderAtelier(); save(); $('atelier').scrollIntoView({behavior: 'smooth', block: 'start'});
+    setStatus($('dev-status'), 'Alphabet complet, repris de la structure de la police libre. Les curseurs « Donneuse » règlent la graisse, la largeur, la hauteur d\'x et l\'arrondi.');
+    return;
+  }
   font = prep(JSON.parse(JSON.stringify({nom: p.nom, categorie: p.categorie, description: p.description, plume: p.plume, inclinaison: p.inclinaison, espacement: p.espacement, metriques: p.metriques, glyphes: p.glyphes})));
   fontIsExample = pistesAreExamples; missing = []; $('fname').value = font.nom; $('try').value = $('mot').value.trim() || 'VIEWZ';
   renderAtelier(); $('atelier').scrollIntoView({behavior: 'smooth', block: 'start'});
