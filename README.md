@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/viewz-type.png" alt="VIEWZ Type, étude typographique" width="420"></p>
+
 # VIEWZ Type
 
 Application web, dans le navigateur, pour retrouver une typographie à partir d'une image, reproduire un alphabet à partir de quelques lettres, et créer une police installable (.otf).
