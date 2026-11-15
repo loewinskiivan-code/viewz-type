@@ -205,7 +205,7 @@ footer{margin-top:40px;padding-top:12px;border-top:1px solid var(--line);font:40
       <div class="group"><strong>Ambiance</strong><div class="chips" id="c-ambiance"></div></div>
       <div class="row" style="align-items:flex-start">
         <label class="f" style="flex:2 1 300px">Tes précisions (facultatif)
-          <textarea id="precisions" placeholder="Ex. une gothique pour une marque de streetwear, lisible en petit, un peu penchée, contour irrégulier"></textarea>
+          <textarea id="precisions" placeholder="Ex. une gothique pour une marque de streetwear, lisible en petit, avec des terminaisons en biseau"></textarea>
         </label>
         <label class="f" style="flex:1 1 160px">Mot d'essai des pistes
           <input type="text" id="mot" value="VIEWZ" maxlength="14" autocomplete="off">
@@ -235,7 +235,7 @@ footer{margin-top:40px;padding-top:12px;border-top:1px solid var(--line);font:40
           <button class="ghost" id="x-own" type="button">Y reporter le caractère de mes lettres</button>
         </div>
         <div class="status" id="x-status" role="status"></div>
-        <p style="font-size:13px;color:var(--muted);max-width:70ch;margin:0">Le croisement se fait par calcul, sans IA : chaque lettre devient la forme intermédiaire entre les deux polices, et un curseur de l'atelier règle la part de chacune. Il donne ses meilleurs résultats entre deux structures de la même famille. Le report du caractère utilise les lettres que tu as détourées dans l'onglet Reproduire.</p>
+        <p style="font-size:13px;color:var(--muted);max-width:70ch;margin:0">Le croisement se fait par calcul, sans IA : chaque lettre devient la forme intermédiaire entre les deux polices, et un curseur de l'atelier règle la part de chacune. Il donne ses meilleurs résultats entre deux structures de la même famille. Le report du caractère utilise les lettres que tu as détourées dans l'onglet Reproduire : il reprend leur graisse, leur inclinaison, leur irrégularité et la forme de leurs fins de trait (attaques en haut des fûts, terminaisons en pied et en bout de barre). Pour les fins de trait, les lettres les plus utiles sont l, i, n, h, t, E et F.</p>
       </div>
     </section>
 
@@ -511,6 +511,7 @@ function adapt(L, ch, P){
   if(P.d && polys.length) polys = fatten(polys, P.d, !P.r);
   if(P.r > 0 && polys.length){ polys = fatten(fatten(fatten(polys, -P.r), 2 * P.r), -P.r); }
   var w = Math.max(80, w0 + 1.2 * P.d);
+  if(P.st > 0 && P.sty && P.sty.tm && polys.length) polys = reshapeEnds(polys, P.sty.tm, Math.min(1, P.st / 100));
   if(P.st > 0 && P.sty && polys.length){ polys = stylize(polys, P.sty, P.st / 100, ch.codePointAt(0), P.xT); w = Math.max(80, w + 2 * P.st / 100 * thHV(P.sty.th)[0]); }
   return {w: w, polys: polys};
 }
@@ -827,6 +828,103 @@ function stylize(polys, Y, k, seed, xT, on){
   if((holes(res) < holes(src) || res.length > src.length) && k > 0.12) return stylize(src, Y, k / 2, seed, xT, on);
   return res;
 }
+/* ---------- stroke ends : shape of the attacks (top of the stems) and of the terminals (feet, free ends of strokes) ----------
+   A stroke end is a short stretch of outline where the direction makes a half turn around the ink, between two flanks
+   that run straight and opposite. Across the stroke, its shape is read as a profile of TK heights (in stroke widths,
+   mean removed) : flat cut, bevel, round, point. Profiles are kept per direction of the stroke : u up, d down, l left, r right. */
+var TK = 9;
+function strokeW(polys){ var t = thickSamples(polys).map(function(x){ return x[1]; }); return t.length ? med(t) : 0; }
+function findEnds(p, Wm){
+  var d = densify(p, 4), L = 0, i, acc = [0]; for(i = 0; i < d.length; i++){ var q = d[(i + 1) % d.length]; L += Math.hypot(q[0] - d[i][0], q[1] - d[i][1]); acc.push(L); }
+  var h = clamp(Wm / 10, 4, 10, 6), m = Math.floor(L / h), maxArc = 4.5 * Wm; if(m < 24 || L < 1.5 * maxArc) return null;
+  h = L / m;
+  var U = new Array(m), j = 0; for(i = 0; i < m; i++){ var a = i * h; while(acc[j + 1] < a) j++; var q0 = d[j], q1 = d[(j + 1) % d.length], f = (a - acc[j]) / ((acc[j + 1] - acc[j]) || 1); U[i] = [q0[0] + (q1[0] - q0[0]) * f, q0[1] + (q1[1] - q0[1]) * f]; }
+  var at = function(k){ return U[((k % m) + m) % m]; }, qs = Math.max(1, Math.round(0.2 * Wm / h)), th = new Array(m);
+  for(i = 0; i < m; i++){ var b0 = at(i - qs), b1 = at(i + qs); th[i] = Math.atan2(b1[1] - b0[1], b1[0] - b0[0]); }
+  var PS = new Array(2 * m + 1); PS[0] = 0; for(i = 0; i < 2 * m; i++){ var dt = th[(i + 1) % m] - th[i % m]; while(dt > Math.PI) dt -= 2 * Math.PI; while(dt < -Math.PI) dt += 2 * Math.PI; PS[i + 1] = PS[i] + dt; }
+  var turn = function(a, b){ a = ((a % m) + m) % m; b = a + ((((b - a) % m) + m) % m); return PS[b] - PS[a]; };
+  var maxS = Math.ceil(maxArc / h), cand = [];
+  for(i = 0; i < m; i++){ for(var e = i + 1; e <= i + maxS; e++){ if(PS[e] - PS[i] >= 2.62){ cand.push([e - i, i]); break; } } }
+  cand.sort(function(a, b){ return a[0] - b[0]; });
+  var taken = new Uint8Array(m), ends = [], g = Math.max(2, Math.round(0.5 * Wm / h));
+  cand.forEach(function(c){
+    var k = c[1], e = k + c[0], x; for(x = k; x <= e; x++) if(taken[x % m]) return;
+    for(x = k - g; x <= e + g; x++) taken[((x % m) + m) % m] = 1;
+    if(Math.abs(turn(k - 3 * g, k - g)) > 0.75 || Math.abs(turn(e + g, e + 3 * g)) > 0.75) return;
+    var A = at(k - g), A0 = at(k - 3 * g), B = at(e + g), B1 = at(e + 3 * g);
+    var ta = [A[0] - A0[0], A[1] - A0[1]], tb = [B1[0] - B[0], B1[1] - B[1]], la = Math.hypot(ta[0], ta[1]) || 1, lb = Math.hypot(tb[0], tb[1]) || 1;
+    ta = [ta[0] / la, ta[1] / la]; tb = [tb[0] / lb, tb[1] / lb];
+    if(-(ta[0] * tb[0] + ta[1] * tb[1]) < 0.72) return;
+    var u = [ta[0] - tb[0], ta[1] - tb[1]], lu = Math.hypot(u[0], u[1]); u = [u[0] / lu, u[1] / lu];
+    var ax = Math.max(Math.abs(u[0]), Math.abs(u[1])); if(ax < 0.883) return;
+    var cls = Math.abs(u[1]) >= Math.abs(u[0]) ? (u[1] > 0 ? 'u' : 'd') : (u[0] > 0 ? 'r' : 'l'), n = [u[1], -u[0]];
+    if((cls === 'u' || cls === 'd') ? n[0] < 0 : n[1] < 0) n = [-n[0], -n[1]];
+    var W = Math.abs((B[0] - A[0]) * n[0] + (B[1] - A[1]) * n[1]); if(W < 14 || W < 0.35 * Wm || W > 1.9 * Wm) return;
+    var E = {cls: cls, u: u, n: n, W: W, M: [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2], a0: (((k - g) % m) + m) % m * h, a1: (((e + g) % m) + m) % m * h}, env = [], cnt = 0;
+    for(x = k - g; x <= e + g; x++){ var P = at(x), sh = endSH(E, P), bi = Math.round((clamp(sh[0], -1, 1, 0) + 1) * (TK - 1) / 2); if(env[bi] === undefined || sh[1] > env[bi]) env[bi] = sh[1]; }
+    for(x = 0; x < TK; x++) if(env[x] !== undefined) cnt++;
+    if(cnt < 5) return;
+    for(x = 0; x < TK; x++) if(env[x] === undefined){ var lo = x, hi = x; while(lo >= 0 && env[lo] === undefined) lo--; while(hi < TK && env[hi] === undefined) hi++; env[x] = lo < 0 ? env[hi] : hi >= TK ? env[lo] : env[lo] + (env[hi] - env[lo]) * (x - lo) / (hi - lo); }
+    var mean = env.reduce(function(a, b){ return a + b; }, 0) / TK;
+    E.hm = mean; E.prof = env.map(function(v){ return v - mean; }); ends.push(E);
+  });
+  return ends.length ? {ends: ends, d: d, acc: acc, L: L} : null;
+}
+function endSH(E, P){ var dx = P[0] - E.M[0], dy = P[1] - E.M[1]; return [(dx * E.n[0] + dy * E.n[1]) / (E.W / 2), (dx * E.u[0] + dy * E.u[1]) / E.W]; }
+function profAt(pr, s){ var x = (clamp(s, -1, 1, 0) + 1) * (TK - 1) / 2, i = Math.min(TK - 2, Math.floor(x)); return pr[i] + (pr[i + 1] - pr[i]) * (x - i); }
+/* profiles of the stroke ends of a set of letters, per direction ; a direction that these letters do not show takes the
+   roundness of the others and, between top and bottom, the opposite bevel (the cut of one same pen) */
+function endProfiles(list){
+  var by = {u: [], d: [], l: [], r: []}, n = 0;
+  list.forEach(function(polys){ var Wm = strokeW(polys); if(!(Wm > 0)) return; polys.forEach(function(p){ var F = findEnds(p, Wm); if(F) F.ends.forEach(function(E){ by[E.cls].push(E.prof); n++; }); }); });
+  if(!n) return null;
+  var tm = {n: {}}, seen = [];
+  'udlr'.split('').forEach(function(c){ tm.n[c] = by[c].length; tm[c] = by[c].length ? by[c][0].map(function(_, i){ return Math.round(100 * med(by[c].map(function(pr){ return pr[i]; }))) + 0; }) : null; if(tm[c]) seen.push(tm[c]); });
+  var even = function(pr){ return pr.map(function(v, i){ return (v + pr[TK - 1 - i]) / 2; }); }, odd = function(pr){ return pr.map(function(v, i){ return (v - pr[TK - 1 - i]) / 2; }); };
+  var ev = seen[0].map(function(_, i){ return Math.round(seen.reduce(function(a, pr){ return a + even(pr)[i]; }, 0) / seen.length); });
+  if(!tm.u) tm.u = tm.d ? even(tm.d).map(function(v, i){ return Math.round(v - odd(tm.d)[i]); }) : ev.slice();
+  if(!tm.d) tm.d = by.u.length ? even(tm.u).map(function(v, i){ return Math.round(v - odd(tm.u)[i]); }) : ev.slice();
+  if(!tm.l) tm.l = ev.slice(); if(!tm.r) tm.r = ev.slice();
+  return tm;
+}
+/* the stroke ends of a letter are redrawn on the profiles tm, k = 1 : fully. The mean length of each stroke is kept. */
+function reshapeEnds(polys, tm, k){
+  if(!polys.length || !tm || !(k > 0)) return polys;
+  var Wm = strokeW(polys), touched = false; if(!(Wm > 0)) return polys;
+  var out = polys.map(function(p){
+    var F = findEnds(p, Wm); if(!F) return p;
+    var ends = F.ends.filter(function(E){ return tm[E.cls]; }); if(!ends.length) return p;
+    var res = [], d = F.d, acc = F.acc, src = 0;
+    /* densify keeps the vertices of p in order : a point of d is a vertex when it equals the next vertex of p */
+    for(var i = 0; i < d.length; i++){
+      var P = d[i], a = acc[i], isV = src < p.length && P[0] === p[src][0] && P[1] === p[src][1]; if(isV) src++;
+      var E = null; for(var x = 0; x < ends.length; x++){ var e = ends[x]; if(e.a0 <= e.a1 ? (a >= e.a0 && a <= e.a1) : (a >= e.a0 || a <= e.a1)){ E = e; break; } }
+      if(!E){ if(isV) res.push(P); continue; }
+      var sh = endSH(E, P), tH = E.hm + profAt(tm[E.cls], sh[0]) / 100, dl = k * (tH - sh[1]) * E.W;
+      res.push([P[0] + E.u[0] * dl, P[1] + E.u[1] * dl]); touched = true;
+    }
+    return res.length > 2 ? res : p;
+  });
+  if(!touched) return polys;
+  var r = unionPos(out), holes = function(Pp){ return Pp.filter(function(p){ var a = 0; for(var i = 0; i < p.length; i++){ var q = p[(i + 1) % p.length]; a += p[i][0] * q[1] - q[0] * p[i][1]; } return a < 0; }).length; };
+  if(!r.length || holes(r) !== holes(polys) || r.length !== polys.length) return k > 0.3 ? reshapeEnds(polys, tm, k / 2) : polys;
+  return r;
+}
+function endWord(pr){
+  if(!pr) return '';
+  var slope = (pr[TK - 1] + pr[TK - 2] - pr[0] - pr[1]) / 2, dome = pr[(TK - 1) / 2] - (pr[0] + pr[TK - 1]) / 2;
+  if(Math.abs(slope) > 30 && Math.abs(slope) > dome) return 'en biseau';
+  /* a round end is still at 87 % of its height halfway to the edge, a pointed one at 50 % */
+  if(dome > 16) return ((pr[2] + pr[TK - 3]) / 2 - (pr[0] + pr[TK - 1]) / 2) / dome < 0.68 ? 'en pointe' : 'arrondies';
+  if(Math.abs(slope) > 16) return 'en biseau'; if(dome < -12) return 'creusées'; return 'coupées droit';
+}
+/* profiles drawn from a word of the brief : b bevel (the cut of one pen held at a constant angle), r round, p point, f flat */
+function endsFromWord(kind){
+  var pr = [], i, s, mean = 0; for(i = 0; i < TK; i++){ s = -1 + 2 * i / (TK - 1); pr.push(kind === 'r' ? 50 * Math.sqrt(1 - s * s) : kind === 'p' ? 62 * (1 - Math.abs(s)) : kind === 'b' ? 24 * s : 0); mean += pr[i] / TK; }
+  pr = pr.map(function(v){ return Math.round(v - mean); });
+  var neg = pr.map(function(v){ return -v; });
+  return kind === 'b' ? {u: pr, d: neg, l: neg, r: pr} : {u: pr, d: pr.slice(), l: pr.slice(), r: pr.slice()};
+}
 /* overlap 0..1 of two letters set on the same baseline, left edges aligned */
 function iouP(A, B){
   var CL = ClipperLib, dx = pbox(B).x0 - pbox(A).x0, a = toClip(shiftP(A, dx)), b = toClip(B), ar = function(type){ var c = new CL.Clipper(), sol = new CL.Paths(), t = 0; c.AddPaths(a, CL.PolyType.ptSubject, true); c.AddPaths(b, CL.PolyType.ptClip, true); c.Execute(type, sol, CL.PolyFillType.pftNonZero, CL.PolyFillType.pftNonZero); sol.forEach(function(p){ t += CL.Clipper.Area(p); }); return Math.abs(t); };
@@ -859,12 +957,20 @@ function measureStyle(L, tcomp, P, free){
   var f0 = fieldOf(keys.map(function(c){ return {t: T[c], d: stylize(D[c], Y, 1, 0, P.xT, {th: 1, sl: 1})}; }), P.xT);
   if(f0){ var zf = dose(function(s){ return {th: Y.th, sl: Y.sl, wa: 0, f: f0.map(function(v){ return Math.round(v * s); })}; }, {th: 1, sl: 1, f: 1}); if(zf) Y.f = zf.f; }
   Y.gain = [Math.round(1000 * med(keys.map(function(c){ return iouP(D[c], T[c]); }))) / 10, Math.round(base * 1000) / 10];
+  /* shape of the stroke ends (attacks and terminals). Free structure : carried over as measured. Fitted donor : kept only when it brings the letters closer. */
+  var tm = endProfiles(keys.map(function(c){ return T[c]; }));
+  if(tm){
+    if(free) Y.tm = tm;
+    else { var withTm = med(keys.map(function(c){ return iouP(stylize(reshapeEnds(D[c], tm, 1), Y, 1, 0, P.xT), T[c]); })), without = med(keys.map(function(c){ return iouP(stylize(D[c], Y, 1, 0, P.xT), T[c]); })); if(withTm > without + 0.002) Y.tm = tm; }
+  }
   return Y;
 }
 function normStyle(y){
   if(!y || !Array.isArray(y.th) || y.th.length !== STB) return null;
   var f = (Array.isArray(y.f) && y.f.length === 2 * FU * FV) ? y.f.map(function(v){ return clamp(v, -120, 120, 0); }) : null;
-  return {th: y.th.map(function(v){ return clamp(v, -45, 45, 0); }), sl: clamp(y.sl, -0.35, 0.35, 0), wa: clamp(y.wa, 0, 12, 0), f: f, gain: Array.isArray(y.gain) ? y.gain.slice(0, 2).map(function(v){ return clamp(v, 0, 100, 0); }) : null};
+  var tm = null;
+  if(y.tm && typeof y.tm === 'object'){ tm = {n: {}}; var okT = false; ['u', 'd', 'l', 'r'].forEach(function(c){ var pr = y.tm[c]; tm[c] = (Array.isArray(pr) && pr.length === TK) ? pr.map(function(v){ return clamp(v, -90, 90, 0); }) : null; if(tm[c]) okT = true; tm.n[c] = clamp(y.tm.n && y.tm.n[c], 0, 999, 0); }); if(!okT) tm = null; }
+  return {th: y.th.map(function(v){ return clamp(v, -45, 45, 0); }), sl: clamp(y.sl, -0.35, 0.35, 0), wa: clamp(y.wa, 0, 12, 0), f: f, tm: tm, gain: Array.isArray(y.gain) ? y.gain.slice(0, 2).map(function(v){ return clamp(v, 0, 100, 0); }) : null};
 }
 /* ---------- crossing two structures : each letter is the shape lying between the two fonts ----------
    Both letters are turned into a distance field (distance to the outline, negative inside the ink),
@@ -1196,6 +1302,10 @@ function briefText(){
    A lexicon of French (and a few English) words. Each entry either points to a family, an ambiance,
    or an adjustment of the piste. A word that follows a negation ("pas trop gras", "sans arrondi") is set aside. */
 var LEX = [
+  {re: /\b(?:(?:terminaisons?|fins? de traits?|extremites?|bouts?|attaques?|coupes?) (?:en |tres |plutot |un peu )?)?(?:biseaux?|biseautee?s?|coupees? en biais|en biais)\b/g, adj: 'tm', v: 'b', lab: 'fins de trait en biseau'},
+  {re: /\b(?:terminaisons?|fins? de traits?|extremites?|bouts?|attaques?) (?:tres |plutot |un peu )?(?:arrondie?s?|rondes?)\b/g, adj: 'tm', v: 'r', lab: 'fins de trait arrondies'},
+  {re: /\b(?:(?:terminaisons?|fins? de traits?|extremites?|bouts?|attaques?) (?:en |tres |plutot |un peu )?)?(?:pointes?|pointue?s?|effilee?s?)\b/g, adj: 'tm', v: 'p', lab: 'fins de trait en pointe'},
+  {re: /\b(?:terminaisons?|fins? de traits?|extremites?|bouts?|attaques?) (?:tres |plutot |un peu )?(?:carree?s?|droites?|nettes?|franches?)\b/g, adj: 'tm', v: 'f', lab: 'fins de trait coupées droit'},
   {re: /\b(?:peu de contraste|peu contraste\w*|sans contraste|faible contraste|monolineaires?|trait constant)\b/g, adj: 'con', v: -1, lab: 'contraste réduit', raw: 1},
   {re: /\b(?:sans serifs?|sans empattements?|lineales?|grotesques?|caracteres? batons?)\b/g, fam: 'Linéale', raw: 1},
   {re: /\b(?:art deco|annees (?:20|30|vingt|trente)|gatsby)\b/g, fam: 'Art déco'},
@@ -1238,7 +1348,7 @@ var NOISE = /^(?:pour|avec|dans|une?|des?|les?|la|du|aux?|et|ou|en|sur|qui|que|e
 function normText(s){ return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/œ/g, 'oe').replace(/æ/g, 'ae').replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim(); }
 /* Returns {fams, moods, fonts, w, sx, xh, esp, inc, r, wa, con, seen: [labels understood], out: [words set aside by a negation], rest: [words not recognised]} */
 function readPrecisions(text){
-  var R = {fams: [], moods: [], fonts: [], w: 0, sx: 0, xh: 0, esp: 0, inc: 0, r: 0, wa: 0, con: 0, seen: [], out: [], rest: []};
+  var R = {fams: [], moods: [], fonts: [], w: 0, sx: 0, xh: 0, esp: 0, inc: 0, r: 0, wa: 0, con: 0, tm: '', seen: [], out: [], rest: []};
   var raw = String(text || ''), t = normText(raw); if(!t) return R;
   var orig = {}; raw.split(/[^A-Za-zÀ-ÿœŒ0-9]+/).forEach(function(w){ var k = normText(w); if(k && !orig[k]) orig[k] = w.toLowerCase(); });
   var say = function(w){ return w.split(' ').map(function(x){ return orig[x] || x; }).join(' '); };
@@ -1267,6 +1377,7 @@ function readPrecisions(text){
         else if(E.adj === 'sx') R.sx = E.v > 0 ? 1 + 0.22 * g : 1 - 0.18 * Math.min(g, 1.25);
         else if(E.adj === 'lis'){ R.xh += 8; R.esp += 14; }
         else if(E.adj === 'con') R.con = E.v * g;
+        else if(E.adj === 'tm') R.tm = E.v;
         else R[E.adj] += E.v * g;
         add(R.seen, word === E.lab ? word : word + ' (' + E.lab + ')');
       }
@@ -1283,9 +1394,10 @@ function applyPrecisions(p, R){
   if(R.r){ D.r = R.r; notes.push('angles arrondis'); }
   if(R.esp){ p.espacement = R.esp; notes.push(R.esp > 0 ? 'lettres espacées' : 'lettres serrées'); }
   if(R.inc){ p.inclinaison = R.inc; notes.push('inclinaison'); }
-  if(R.wa || R.con){
+  if(R.wa || R.con || R.tm){
     var a = Math.round(7 * R.con), th = [a, a, 0, -a, -a, -a, 0, a];
-    D.sty = {th: th, sl: 0, wa: R.wa, f: null, gain: null}; D.st = 100;
+    D.sty = {th: th, sl: 0, wa: R.wa, f: null, tm: R.tm ? endsFromWord(R.tm) : null, gain: null}; D.st = 100;
+    if(R.tm) notes.push({b: 'fins de trait en biseau', r: 'fins de trait arrondies', p: 'fins de trait en pointe', f: 'fins de trait coupées droit'}[R.tm]);
     if(R.con) notes.push(R.con > 0 ? 'contraste accentué' : 'contraste réduit'); if(R.wa) notes.push('contour irrégulier');
   }
   return notes;
@@ -1511,7 +1623,7 @@ $('gen').onclick = async function(){
     var list = picks.filter(function(p){ return LIBMAP[p.e[0]]; }).map(function(p, n){ return pisteFrom(LIBMAP[p.e[0]], p.fam, 'ABCD'.charAt(n), want, sx, p.hit, R); });
     if(!list.length) throw new Error('lib');
     pistes = list; pistesAreExamples = false; renderPistes(); save();
-    setStatus(st, list.length + ' pistes construites par calcul sur de vraies polices libres, sans IA. Choisis celle à développer, ou relance pour en voir d\'autres.' + (moods.length ? ' Ambiance prise en compte (' + moods.join(', ').toLowerCase() + ') : les polices de référence étiquetées ainsi passent en premier.' : '') + (pk.missed.length ? ' Aucune police de référence « ' + pk.missed.join(' », « ') + ' » n\'est étiquetée pour cette ambiance : famille gardée telle quelle.' : '') + (R.seen.length ? ' Tes précisions écrites sont prises en compte par le code (détail sous le brief).' : R.rest.length ? ' Aucun mot de tes précisions n\'a d\'effet sur le calcul (détail sous le brief).' : '') + (over.length ? ' Pour la ' + over.join(' et la ') + ', tes pastilles priment sur le texte.' : '') + (R.wa || R.con ? ' Dans l\'atelier, le curseur « caractère » dose le contraste et l\'irrégularité.' : ''));
+    setStatus(st, list.length + ' pistes construites par calcul sur de vraies polices libres, sans IA. Choisis celle à développer, ou relance pour en voir d\'autres.' + (moods.length ? ' Ambiance prise en compte (' + moods.join(', ').toLowerCase() + ') : les polices de référence étiquetées ainsi passent en premier.' : '') + (pk.missed.length ? ' Aucune police de référence « ' + pk.missed.join(' », « ') + ' » n\'est étiquetée pour cette ambiance : famille gardée telle quelle.' : '') + (R.seen.length ? ' Tes précisions écrites sont prises en compte par le code (détail sous le brief).' : R.rest.length ? ' Aucun mot de tes précisions n\'a d\'effet sur le calcul (détail sous le brief).' : '') + (over.length ? ' Pour la ' + over.join(' et la ') + ', tes pastilles priment sur le texte.' : '') + (R.wa || R.con || R.tm ? ' Dans l\'atelier, le curseur « caractère reporté » dose le contraste, l\'irrégularité et la forme des fins de trait.' : ''));
   } catch(e){ setStatus(st, 'La bibliothèque de polices n\'a pas pu être chargée. Recharge la page et réessaie.', 'err'); }
   finally { btn.disabled = false; }
 };
@@ -1556,7 +1668,7 @@ $('x-own').onclick = async function(){
     if(!(k > 0)){ setStatus(st, 'Tes lettres détourées ne permettent pas de caler l\'échelle : indique au moins une lettre minuscule ou capitale.', 'err'); return; }
     /* traced letters brought to the scale of the piste, then the style is measured exactly as in the Reproduire tab */
     var tcl = {}; Object.keys(glyphes).forEach(function(c){ if(tc[c] && tc[c].polys.length) tcl[c] = {w: tc[c].w * k, polys: tc[c].polys.map(function(p){ return p.map(function(q){ return [q[0] * k, q[1] * k]; }); })}; });
-    var Q = {sx: P.sx, d: P.d, r: P.r, xD: P.xD, aD: P.aD, xT: P.xT, aT: P.aT, mix: P.mix}, Y = measureStyle(L, tcl, Q, true), has = Y.wa || Y.sl || Y.f || Y.th.some(function(v){ return v; });
+    var Q = {sx: P.sx, d: P.d, r: P.r, xD: P.xD, aD: P.aD, xT: P.xT, aT: P.aT, mix: P.mix}, Y = measureStyle(L, tcl, Q, true), has = Y.wa || Y.sl || Y.f || Y.tm || Y.th.some(function(v){ return v; });
     if(!Y.gain){ setStatus(st, 'Aucune de tes lettres détourées (' + Object.keys(tcl).join(' ') + ') n\'existe dans cette structure : rien à mesurer.', 'err'); return; }
     if(!has){ setStatus(st, 'Aucun trait de style mesurable à reporter sur cette piste avec ces lettres (' + Object.keys(tcl).join(' ') + ').', 'err'); return; }
     var D = JSON.parse(JSON.stringify(A.donneur)); D.sty = Y; D.st = 100;
@@ -1911,6 +2023,7 @@ function styleNote(Y){
   if(Y.th.some(function(x){ return x; })) t.push(Math.abs(v - h) >= 3 ? (v > h ? 'traits horizontaux renforcés' : 'traits verticaux renforcés') : 'épaisseur du trait');
   if(Y.sl) t.push('inclinaison (' + (Y.sl > 0 ? '+' : '') + Math.round(Math.atan(Y.sl) * 180 / Math.PI) + '°)');
   if(Y.f) t.push('déformation d\'ensemble des formes');
+  if(Y.tm){ var nn = Y.tm.n || {}, at = endWord(Y.tm.u), te = endWord((nn.d || !(nn.l || nn.r)) ? Y.tm.d : (nn.r ? Y.tm.r : Y.tm.l)); t.push('forme des fins de trait (attaques ' + at + (nn.u ? '' : ', déduites') + ' ; terminaisons ' + te + (nn.d || nn.l || nn.r ? '' : ', déduites') + ')'); }
   if(!t.length) return 'Aucun trait de style mesurable à reporter sur la donneuse avec ces lettres.';
   return 'Caractère de tes lettres reporté sur la donneuse : ' + t.join(', ') + (Y.gain && Y.gain[1] > Y.gain[0] ? ' (recouvrement mesuré : ' + String(Y.gain[0]).replace('.', ',') + ' % puis ' + String(Y.gain[1]).replace('.', ',') + ' %)' : '') + '. Curseur « caractère reporté » pour doser.';
 }
