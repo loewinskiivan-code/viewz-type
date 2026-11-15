@@ -46,7 +46,7 @@ button.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
 button.accent{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 button:disabled{opacity:.45;cursor:default}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-input[type=text],textarea,select{font:400 16px/1.4 var(--body);color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:2px;padding:11px 12px;width:100%}
+input[type=text],input[type=password],textarea,select{font:400 16px/1.4 var(--body);color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:2px;padding:11px 12px;width:100%}
 textarea{min-height:76px;resize:vertical}
 label.f{display:flex;flex-direction:column;gap:6px;font:500 13px/1.2 var(--body);color:var(--muted);flex:1 1 220px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -253,7 +253,7 @@ footer{margin-top:40px;padding-top:12px;border-top:1px solid var(--line);font:40
     <p style="font-size:14px;line-height:1.5">Sans clé, VIEWZ Type fonctionne sans IA : détourage, recherche par mesure dans la bibliothèque, reconstruction d'alphabet et export de police. Avec ta propre clé d'API Anthropic, l'identification d'une police par l'image, la lecture des lettres et la création par prompt s'activent. Les appels sont facturés sur ton compte Anthropic.</p>
     <p style="font-size:14px;line-height:1.5">La clé reste dans ce navigateur (stockage local) et n'est envoyée qu'à api.anthropic.com. Ne l'enregistre pas sur un ordinateur partagé.</p>
     <label for="ai-key" style="font-size:14px">Clé d'API Anthropic</label>
-    <input type="text" id="ai-key" autocomplete="off" spellcheck="false" placeholder="sk-ant-..." style="-webkit-text-security:disc">
+    <input type="password" id="ai-key" autocomplete="off" spellcheck="false" placeholder="sk-ant-...">
     <label for="ai-model" style="font-size:14px;display:block;margin-top:10px">Modèle</label>
     <input type="text" id="ai-model" autocomplete="off" spellcheck="false" placeholder="claude-sonnet-5-5">
     <div class="row" style="margin-top:12px;gap:10px"><button type="button" id="ai-save">Enregistrer</button><button type="button" id="ai-clear" class="ghost">Effacer la clé</button></div>
@@ -1264,7 +1264,8 @@ $('export').onclick = async function(){
   if(!dl){ setStatus(st, "Le téléchargement n'est pas disponible dans cette vue. Ouvre cette page depuis Claude.", 'err'); return; }
   btn.disabled = true;
   try {
-    var family = (font.nom || 'VIEWZ Type').replace(/[^\w \-]/g, '').trim() || 'VIEWZ Type', slug = family.replace(/\s+/g, '-');
+    /* accents are transliterated (é gives e), not dropped : font and file names must stay ASCII */
+    var family = (font.nom || 'VIEWZ Type').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/œ/g, 'oe').replace(/Œ/g, 'OE').replace(/æ/g, 'ae').replace(/Æ/g, 'AE').replace(/[^\w \-]/g, '').replace(/\s+/g, ' ').trim() || 'VIEWZ Type', slug = family.replace(/\s+/g, '-');
     if(font.donneur){ await ensureFonts([font.donneur.id]); fillDonor(font); }
     var f = buildFont(font, getComp(font), family), buf = f.toArrayBuffer();
     var zip = new JSZip();
