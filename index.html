@@ -184,7 +184,7 @@ footer{margin-top:40px;padding-top:12px;border-top:1px solid var(--line);font:40
         <p style="margin:0;font-size:13px;color:var(--muted);max-width:70ch">La reconstruction se fait par calcul, sans IA : l'app compare tes lettres à celles d'environ 2 000 polices libres (bibliothèque Google Fonts, licence OFL), mesure finement les plus proches par superposition, puis ajuste la structure de la police choisie (graisse, largeur, hauteur d'x, arrondi) à tes mesures. Tes lettres détourées remplacent celles de la police.</p>
       </section>
       <section class="stack" id="r-matchbox" hidden>
-        <h3>4 · Structures les plus proches <span class="tag" id="r-libcount"></span></h3>
+        <h3><span id="r-matchtitle">4 · Structures les plus proches</span> <span class="tag" id="r-libcount"></span></h3>
         <div class="grid" id="r-matches"></div>
       </section>
     </div>
@@ -1512,10 +1512,11 @@ function styleNote(Y){
   if(!t.length) return 'Aucun trait de style mesurable à reporter sur la donneuse avec ces lettres.';
   return 'Caractère de tes lettres reporté sur la donneuse : ' + t.join(', ') + (Y.gain && Y.gain[1] > Y.gain[0] ? ' (recouvrement mesuré : ' + String(Y.gain[0]).replace('.', ',') + ' % puis ' + String(Y.gain[1]).replace('.', ',') + ' %)' : '') + '. Curseur « caractère de tes lettres » pour doser.';
 }
-$('r-match').onclick = async function(){
+/* shared by « Reconstruire un alphabet complet » and « Chercher la police existante la plus proche » : same measurement, no AI */
+async function runMatch(btn, find){
   var glyphes = tracedGlyphes(); if(!glyphes) return;
   var hz = tp.scale ? 1 : harmonize(glyphes, tp.side);
-  var st = $('r-status'), btn = this; btn.disabled = true; setStatus(st, 'Chargement de la bibliothèque et premier tri par silhouette', 'busy');
+  var st = $('r-status'); btn.disabled = true; setStatus(st, 'Chargement de la bibliothèque et premier tri par silhouette', 'busy');
   try {
     await loadLib();
     var tc = getComp(prep({glyphes: glyphes})), tcl = {}; Object.keys(glyphes).forEach(function(k){ if(tc[k] && tc[k].polys.length) tcl[k] = tc[k]; });
@@ -1528,14 +1529,16 @@ $('r-match').onclick = async function(){
     lastTraced = {g: glyphes, tcl: tcl};
     $('r-matches').innerHTML = res.map(function(r){
       var tmp = prep({glyphes: {}, donneur: {id: r.L.id, sx: 1, d: 0, r: 0, xD: 500, aD: 700, xT: 500, aT: 700, xh: 100}});
-      return '<article class="card"><div class="row" style="justify-content:space-between"><h4>' + esc(r.L.nom) + ' ' + r.L.graisse + '</h4><span class="score">' + Math.round(r.s * 100) + ' %</span></div><div class="bar"><b style="width:' + Math.round(r.s * 100) + '%"></b></div><div class="spec">' + textSVG(tmp, word, 46, false) + '</div><p>' + esc(r.L.cat) + '</p><button type="button" class="ghost" data-don="' + esc(r.L.id) + '">Reconstruire avec cette structure</button></article>';
+      return '<article class="card"><div class="row" style="justify-content:space-between"><h4>' + esc(r.L.nom) + ' ' + r.L.graisse + '</h4><span class="score">' + Math.round(r.s * 100) + ' %</span></div><div class="bar"><b style="width:' + Math.round(r.s * 100) + '%"></b></div><div class="spec">' + textSVG(tmp, word, 46, false) + '</div><p>' + esc(r.L.cat) + '</p>' + (find ? '<p><a class="lk" target="_blank" rel="noopener" href="https://fonts.google.com/specimen/' + encodeURIComponent(r.L.nom).replace(/%20/g, '+') + '">Ouvrir sur Google Fonts</a></p>' : '') + '<button type="button" class="ghost" data-don="' + esc(r.L.id) + '">Reconstruire avec cette structure</button></article>';
     }).join('');
+    $('r-matchtitle').textContent = find ? '4 · Polices existantes les plus proches' : '4 · Structures les plus proches';
     $('r-libcount').textContent = IDX.fonts.length + ' polices comparées, ' + cand.length + ' mesurées finement'; $('r-matchbox').hidden = false;
-    setStatus(st, (hz !== 1 ? 'Tes lettres n\'étaient pas à la même échelle dans l\'image : les petites lettres ont été ramenées à la hauteur de la panse du b (×' + hz.toFixed(2) + '). ' : '') + 'Classement mesuré : pourcentage de recouvrement entre tes lettres et celles de chaque police. Choisis une structure.');
+    setStatus(st, (hz !== 1 ? 'Tes lettres n\'étaient pas à la même échelle dans l\'image : les petites lettres ont été ramenées à la hauteur de la panse du b (×' + hz.toFixed(2) + '). ' : '') + 'Classement mesuré, sans IA : pourcentage de recouvrement entre tes lettres et celles de chaque police. ' + (find ? 'Ouvre une police sur Google Fonts, ou reconstruis ton alphabet à partir d\'elle.' : 'Choisis une structure.'));
     $('r-matchbox').scrollIntoView({behavior: 'smooth', block: 'start'});
   } catch(e){ setStatus(st, 'La bibliothèque de polices n\'a pas pu être chargée. Recharge la page et réessaie.', 'err'); }
   finally { btn.disabled = false; }
-};
+}
+$('r-match').onclick = function(){ runMatch(this, false); };
 $('r-matches').addEventListener('click', function(e){
   var b = e.target.closest('[data-don]'); if(!b || !lastTraced) return;
   var L = LIBMAP[b.dataset.don], P = fitDonor(L, lastTraced.tcl); P.id = L.id; P.xh = 100; P.sty = measureStyle(L, lastTraced.tcl, P); P.st = 100;
@@ -1552,7 +1555,7 @@ $('r-matches').addEventListener('click', function(e){
   missing = []; $('try').value = dk.length ? Object.keys(gl).join('') + ' déjà plié, à l\'âge doublé' : 'Portez ce vieux whisky au juge blond qui fume';
   openAtelier((dk.length ? 'Lettres construites à partir des tiennes : ' + dk.join(', ') + '. ' : '') + 'Alphabet reconstruit par calcul. ' + styleNote(P.sty) + ' Les curseurs « Donneuse » règlent l\'ajustement trouvé automatiquement.');
 });
-$('r-find').onclick = function(){ if(traceFile){ setShot(traceFile); location.hash = '#recherche'; } };
+$('r-find').onclick = function(){ runMatch(this, true); };
 
 /* ---- persistence ---- */
 function strip(s){ return {nom: s.nom, categorie: s.categorie, description: s.description, plume: s.plume, inclinaison: s.inclinaison, espacement: s.espacement, graisse: s.graisse, source: s.source, donneur: s.donneur, metriques: s.metriques, glyphes: s.glyphes}; }
