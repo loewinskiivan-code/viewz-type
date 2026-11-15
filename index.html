@@ -222,6 +222,20 @@ footer{margin-top:40px;padding-top:12px;border-top:1px solid var(--line);font:40
     <section aria-labelledby="h-pistes">
       <h3 id="h-pistes">2 · Les pistes <span class="tag ex" id="pistes-ex">exemples</span></h3>
       <div class="grid" id="pistes"></div>
+      <div class="sheet stack" id="cross" hidden style="margin-top:16px">
+        <strong>Aller plus loin qu'une police ajustée</strong>
+        <div class="row" style="align-items:flex-end">
+          <label class="f" style="flex:1 1 180px">Structure de base<select id="x-a"></select></label>
+          <label class="f" style="flex:1 1 180px">Seconde structure<select id="x-b"></select></label>
+          <button class="ghost" id="x-go" type="button">Croiser ces deux structures</button>
+        </div>
+        <div class="row" style="align-items:flex-end">
+          <label class="f" style="flex:1 1 180px">Piste à mettre à ta main<select id="x-c"></select></label>
+          <button class="ghost" id="x-own" type="button">Y reporter le caractère de mes lettres</button>
+        </div>
+        <div class="status" id="x-status" role="status"></div>
+        <p style="font-size:13px;color:var(--muted);max-width:70ch;margin:0">Le croisement se fait par calcul, sans IA : chaque lettre devient la forme intermédiaire entre les deux polices, et un curseur de l'atelier règle la part de chacune. Il donne ses meilleurs résultats entre deux structures de la même famille. Le report du caractère utilise les lettres que tu as détourées dans l'onglet Reproduire.</p>
+      </div>
     </section>
 
     <section class="stack" aria-labelledby="h-atelier" id="atelier">
@@ -378,7 +392,7 @@ function normSpec(p){
     nom: String(p.nom || 'Sans titre').slice(0, 40), categorie: String(p.categorie || '').slice(0, 40), description: String(p.description || '').slice(0, 240),
     plume: {forme: FORMES.indexOf(pl.forme) >= 0 ? pl.forme : 'ronde', largeur: clamp(pl.largeur, 20, 220, 80), contraste: clamp(pl.contraste, 0, 0.9, 0.6), angle: clamp(pl.angle, 0, 90, 30)},
     inclinaison: clamp(p.inclinaison, -15, 30, 0), espacement: clamp(p.espacement, -40, 160, 0), graisse: clamp(p.graisse, -40, 40, 0), source: p.source === 'image' ? 'image' : '',
-    donneur: (p.donneur && typeof p.donneur.id === 'string') ? {id: p.donneur.id, sx: clamp(p.donneur.sx, 0.4, 2.5, 1), d: clamp(p.donneur.d, -70, 130, 0), r: clamp(p.donneur.r, 0, 40, 0), xD: clamp(p.donneur.xD, 100, 1200, 500), aD: clamp(p.donneur.aD, 150, 1500, 700), xT: clamp(p.donneur.xT, 100, 1200, 500), aT: clamp(p.donneur.aT, 150, 1500, 700), xh: clamp(p.donneur.xh, 70, 130, 100), st: clamp(p.donneur.st, 0, 150, 100), sty: normStyle(p.donneur.sty)} : null,
+    donneur: (p.donneur && typeof p.donneur.id === 'string') ? {id: p.donneur.id, sx: clamp(p.donneur.sx, 0.4, 2.5, 1), d: clamp(p.donneur.d, -70, 130, 0), r: clamp(p.donneur.r, 0, 40, 0), xD: clamp(p.donneur.xD, 100, 1200, 500), aD: clamp(p.donneur.aD, 150, 1500, 700), xT: clamp(p.donneur.xT, 100, 1200, 500), aT: clamp(p.donneur.aT, 150, 1500, 700), xh: clamp(p.donneur.xh, 70, 130, 100), st: clamp(p.donneur.st, 0, 150, 100), sty: normStyle(p.donneur.sty), mix: normMix(p.donneur.mix)} : null,
     metriques: {cap: clamp(m.cap, 450, 820, 700), x: clamp(m.x, 300, 620, 480), asc: clamp(m.asc, 600, 900, 750), desc: clamp(m.desc, -380, -100, -220)},
     glyphes: (p.glyphes && typeof p.glyphes === 'object') ? p.glyphes : {}
   };
@@ -482,10 +496,20 @@ function warp(polys, P){ return polys.map(function(p){ return p.map(function(q){
 /* one donor glyph adapted to parameters P */
 function adapt(L, ch, P){
   var g = libGlyph(L, ch); if(!g) return null;
-  var polys = warp(g.polys, P);
+  var polys = warp(g.polys, P), w0 = g.w * P.sx, M = P.mix;
+  if(M){
+    /* crossing : each font first takes the weight correction of the brief, then the two letters are blended */
+    if(M.dA && polys.length) polys = fatten(polys, M.dA, true); w0 += 1.2 * M.dA;
+    var LB = LIBMAP[M.id], gb = LB && M.t > 0 ? libGlyph(LB, ch) : null;
+    if(gb){
+      var PB = {sx: P.sx * P.xD / M.xD, xD: M.xD, aD: M.aD, xT: P.xT, aT: P.aT}, pb = warp(gb.polys, PB), wb = gb.w * PB.sx + 1.2 * M.d, fr = [P.sx, P.xD, P.aD, P.xT, P.aT].join(',');
+      if(M.d && pb.length) pb = fatten(pb, M.d, true);
+      var cr = crossPolys([L.id, ch, fr, M.dA].join('|'), polys, w0, [M.id, ch, fr, M.d, M.xD, M.aD].join('|'), pb, wb, M.t / 100); polys = cr.polys; w0 = cr.w;
+    }
+  }
   if(P.d && polys.length) polys = fatten(polys, P.d, !P.r);
   if(P.r > 0 && polys.length){ polys = fatten(fatten(fatten(polys, -P.r), 2 * P.r), -P.r); }
-  var w = Math.max(80, g.w * P.sx + 1.2 * P.d);
+  var w = Math.max(80, w0 + 1.2 * P.d);
   if(P.st > 0 && P.sty && polys.length){ polys = stylize(polys, P.sty, P.st / 100, ch.codePointAt(0), P.xT); w = Math.max(80, w + 2 * P.st / 100 * thHV(P.sty.th)[0]); }
   return {w: w, polys: polys};
 }
@@ -808,8 +832,10 @@ function iouP(A, B){
   var u = ar(CL.ClipType.ctUnion); return u > 0 ? ar(CL.ClipType.ctIntersection) / u : 0;
 }
 /* tcomp: traced letters. P: fitted donor parameters. Returns the style to add on top of them. */
-function measureStyle(L, tcomp, P){
-  var Q = {sx: P.sx, d: P.d, r: P.r, xD: P.xD, aD: P.aD, xT: P.xT, aT: P.aT}, Y = {th: [0, 0, 0, 0, 0, 0, 0, 0], sl: 0, wa: 0, f: null};
+/* free: the structure is not meant to look like the traced letters (Créer tab). Stroke weights and lean do not depend on the
+   structure, so they are carried over as measured ; the local deformation stays kept only when it brings the letters closer. */
+function measureStyle(L, tcomp, P, free){
+  var Q = {sx: P.sx, d: P.d, r: P.r, xD: P.xD, aD: P.aD, xT: P.xT, aT: P.aT, mix: P.mix}, Y = {th: [0, 0, 0, 0, 0, 0, 0, 0], sl: 0, wa: 0, f: null};
   var keys = Object.keys(tcomp).filter(function(c){ return tcomp[c].polys.length && libGlyph(L, c) && libGlyph(L, c).polys.length; });
   if(!keys.length) return Y;
   var T = {}, D = {}, st = [], sd = [], lt = [], ld = [];
@@ -817,7 +843,7 @@ function measureStyle(L, tcomp, P){
   var pt = thickProfile(st), pd = thickProfile(sd), dl = pt.map(function(v, i){ return (v - pd[i]) / 2; }), ok = dl.filter(function(v){ return isFinite(v); }), mean = ok.length ? ok.reduce(function(a, b){ return a + b; }, 0) / ok.length : 0;
   /* each part is kept at the dose (0, half, full) that brings the donor's shared letters closest to the traced ones */
   var fitOf = function(Z, on){ return med(keys.map(function(c){ return iouP(stylize(D[c], Z, 1, 0, P.xT, on), T[c]); })); }, base = med(keys.map(function(c){ return iouP(D[c], T[c]); }));
-  var dose = function(make, on){ var best = null, bs = base + 0.002; [1, 0.5].forEach(function(s){ var Z = make(s), v = fitOf(Z, on); if(v > bs){ bs = v; best = Z; } }); if(best) base = bs; return best; };
+  var dose = function(make, on){ var best = null, bs = base + 0.002; [1, 0.5].forEach(function(s){ var Z = make(s), v = fitOf(Z, on); if(v > bs){ bs = v; best = Z; } }); if(best) base = bs; else if(free && !on.f){ best = make(1); base = fitOf(best, on); } return best; };
   var th0 = dl.map(function(v){ return clamp(v, -30, 30, mean); }), zt = dose(function(s){ return {th: th0.map(function(v){ return Math.round(v * s); }), sl: 0, wa: 0, f: null}; }, {th: 1});
   if(zt) Y.th = zt.th;
   /* one stem alone may just be a quirk of that letter or of the photo: the lean is carried over only when two letters agree */
@@ -839,6 +865,94 @@ function normStyle(y){
   var f = (Array.isArray(y.f) && y.f.length === 2 * FU * FV) ? y.f.map(function(v){ return clamp(v, -120, 120, 0); }) : null;
   return {th: y.th.map(function(v){ return clamp(v, -45, 45, 0); }), sl: clamp(y.sl, -0.35, 0.35, 0), wa: clamp(y.wa, 0, 12, 0), f: f, gain: Array.isArray(y.gain) ? y.gain.slice(0, 2).map(function(v){ return clamp(v, 0, 100, 0); }) : null};
 }
+/* ---------- crossing two structures : each letter is the shape lying between the two fonts ----------
+   Both letters are turned into a distance field (distance to the outline, negative inside the ink),
+   the two fields are averaged with weight t, and the outline of the result is traced again. */
+var MXC = 6, MXB = 108, SDFC = {}, SDFN = 0;
+function sdfOf(key, polys){
+  if(SDFC[key]) return SDFC[key];
+  var b = pbox(polys), x0 = Math.floor((b.x0 - MXB) / MXC), y0 = Math.floor((b.y0 - MXB) / MXC), nx = Math.ceil((b.x1 + MXB) / MXC) - x0 + 1, ny = Math.ceil((b.y1 + MXB) / MXC) - y0 + 1;
+  var D = new Float32Array(nx * ny).fill(MXB), i, j;
+  polys.forEach(function(p){
+    for(var e = 0; e < p.length; e++){
+      var a = p[e], c = p[(e + 1) % p.length], ex = c[0] - a[0], ey = c[1] - a[1], l2 = ex * ex + ey * ey || 1;
+      var i0 = Math.max(0, Math.floor((Math.min(a[0], c[0]) - MXB) / MXC) - x0), i1 = Math.min(nx - 1, Math.ceil((Math.max(a[0], c[0]) + MXB) / MXC) - x0), j0 = Math.max(0, Math.floor((Math.min(a[1], c[1]) - MXB) / MXC) - y0), j1 = Math.min(ny - 1, Math.ceil((Math.max(a[1], c[1]) + MXB) / MXC) - y0);
+      for(j = j0; j <= j1; j++){ var py = (y0 + j) * MXC - a[1]; for(i = i0; i <= i1; i++){ var px = (x0 + i) * MXC - a[0], t = (px * ex + py * ey) / l2; t = t < 0 ? 0 : t > 1 ? 1 : t; var dx = px - t * ex, dy = py - t * ey, d = Math.sqrt(dx * dx + dy * dy), k = j * nx + i; if(d < D[k]) D[k] = d; } }
+    }
+  });
+  for(j = 0; j < ny; j++){
+    var y = (y0 + j) * MXC + 0.013, xs = [];
+    polys.forEach(function(p){ for(var e = 0; e < p.length; e++){ var a = p[e], c = p[(e + 1) % p.length]; if((a[1] > y) !== (c[1] > y)) xs.push(a[0] + (y - a[1]) * (c[0] - a[0]) / (c[1] - a[1])); } });
+    xs.sort(function(u, v){ return u - v; });
+    for(var q = 0; q + 1 < xs.length; q += 2){ var a0 = Math.max(0, Math.ceil(xs[q] / MXC) - x0), a1 = Math.min(nx - 1, Math.floor(xs[q + 1] / MXC) - x0); for(i = a0; i <= a1; i++) D[j * nx + i] = -D[j * nx + i]; }
+  }
+  if(++SDFN > 420){ SDFC = {}; SDFN = 1; }
+  return (SDFC[key] = {x0: x0, y0: y0, nx: nx, ny: ny, D: D});
+}
+/* outline of the area where field D is negative (marching squares, crossings placed by interpolation) */
+function isoLoops(D, nx, ny, x0, y0){
+  var nb = new Map(), pts = new Map();
+  var pt = function(k){ if(pts.has(k)) return; var c = k >> 1, i = c % nx, j = (c - i) / nx, a = D[c], b = (k & 1) ? D[c + nx] : D[c + 1], t = a / (a - b); pts.set(k, (k & 1) ? [(x0 + i) * MXC, (y0 + j + t) * MXC] : [(x0 + i + t) * MXC, (y0 + j) * MXC]); };
+  var link = function(a, b){ pt(a); pt(b); if(!nb.has(a)) nb.set(a, []); if(!nb.has(b)) nb.set(b, []); nb.get(a).push(b); nb.get(b).push(a); };
+  for(var j = 0; j < ny - 1; j++) for(var i = 0; i < nx - 1; i++){
+    var c = j * nx + i, m = (D[c] < 0 ? 1 : 0) | (D[c + 1] < 0 ? 2 : 0) | (D[c + nx + 1] < 0 ? 4 : 0) | (D[c + nx] < 0 ? 8 : 0);
+    if(m === 0 || m === 15) continue;
+    var B = c * 2, R = (c + 1) * 2 + 1, T = (c + nx) * 2, Lf = c * 2 + 1;
+    if(m === 1 || m === 14) link(Lf, B); else if(m === 2 || m === 13) link(B, R); else if(m === 3 || m === 12) link(Lf, R); else if(m === 4 || m === 11) link(R, T); else if(m === 6 || m === 9) link(B, T); else if(m === 7 || m === 8) link(Lf, T);
+    else { var ctr = (D[c] + D[c + 1] + D[c + nx + 1] + D[c + nx]) / 4 < 0; if((m === 5) === ctr){ link(B, R); link(Lf, T); } else { link(Lf, B); link(R, T); } }
+  }
+  var seen = new Set(), loops = [];
+  nb.forEach(function(_, k0){
+    if(seen.has(k0)) return;
+    var loop = [], k = k0, prev = -1;
+    while(k !== undefined && !seen.has(k)){ seen.add(k); loop.push(pts.get(k)); var n = nb.get(k), nxt = n[0] !== prev && !seen.has(n[0]) ? n[0] : n[1]; prev = k; k = (nxt !== undefined && !seen.has(nxt)) ? nxt : undefined; }
+    if(loop.length >= 4) loops.push(loop);
+  });
+  return loops;
+}
+/* separate parts of a letter (stem and dot of the i, base and accent...) : each outer contour with its holes, from bottom to top */
+function partsOf(polys){
+  var ar = function(p){ var a = 0; for(var i = 0; i < p.length; i++){ var q = p[(i + 1) % p.length]; a += p[i][0] * q[1] - q[0] * p[i][1]; } return a; };
+  var inside = function(pt, p){ var c = false; for(var i = 0, j = p.length - 1; i < p.length; j = i++){ if((p[i][1] > pt[1]) !== (p[j][1] > pt[1]) && pt[0] < (p[j][0] - p[i][0]) * (pt[1] - p[i][1]) / (p[j][1] - p[i][1]) + p[i][0]) c = !c; } return c; };
+  var out = polys.filter(function(p){ return ar(p) > 0; }).map(function(p){ return {polys: [p], b: pbox([p])}; });
+  polys.filter(function(p){ return ar(p) <= 0; }).forEach(function(h){ var o = out.filter(function(c){ return inside(h[0], c.polys[0]); }).sort(function(u, v){ return (u.b.x1 - u.b.x0) - (v.b.x1 - v.b.x0); })[0]; if(o) o.polys.push(h); });
+  return out.sort(function(u, v){ return Math.round((u.b.y0 + u.b.y1) / 120) - Math.round((v.b.y0 + v.b.y1) / 120) || (u.b.x0 + u.b.x1) - (v.b.x0 + v.b.x1); });
+}
+/* one part of A blended with the matching part of B : B is first laid over A (same width, same place) so that stems meet, the two are blended, and the result is moved to the place lying between the two */
+function crossPart(kA, A, bA, kB, B, bB, t){
+  var wa = (bA.x1 - bA.x0) || 1, wb = (bB.x1 - bB.x0) || 1, r = wa / wb, fit = r > 0.6 && r < 1.7, ov = (Math.min(bA.y1, bB.y1) - Math.max(bA.y0, bB.y0)) / (Math.min(bA.y1 - bA.y0, bB.y1 - bB.y0) || 1);
+  var dy = ov > 0.6 ? 0 : (bA.y0 + bA.y1 - bB.y0 - bB.y1) / 2, cx = (bA.x0 + bA.x1 - bB.x0 - bB.x1) / 2;
+  var B2 = B.map(function(p){ return p.map(function(q){ return [fit ? bA.x0 + (q[0] - bB.x0) * r : q[0] + cx, q[1] + dy]; }); });
+  var a = sdfOf(kA, A), b = sdfOf([kB, fit ? Math.round(r * 1000) : 'c', Math.round(bA.x0), Math.round(cx), Math.round(dy)].join('|'), B2);
+  var x0 = Math.min(a.x0, b.x0), y0 = Math.min(a.y0, b.y0), nx = Math.max(a.x0 + a.nx, b.x0 + b.nx) - x0, ny = Math.max(a.y0 + a.ny, b.y0 + b.ny) - y0, D = new Float32Array(nx * ny).fill(MXB);
+  var put = function(g, k){ for(var j = 0; j < g.ny; j++){ var o = (j + g.y0 - y0) * nx + g.x0 - x0, rw = j * g.nx; for(var i = 0; i < g.nx; i++) D[o + i] += k * (g.D[rw + i] - MXB); } };
+  put(a, 1 - t); put(b, t);
+  /* a thin stroke that does not sit at the same place in the two fonts can break or vanish in between : the blend is then
+     taken slightly bolder, by the smallest step that keeps the letter in one piece with its counters */
+  var topo = function(P){ var o = 0, h = 0; P.forEach(function(p){ var ar = 0; for(var i = 0; i < p.length; i++){ var q = p[(i + 1) % p.length]; ar += p[i][0] * q[1] - q[0] * p[i][1]; } if(ar > 0) o++; else h++; }); return [o, h]; };
+  var tA = topo(A), tB = topo(B2), loops = null, first = null;
+  [0, 6, 12, 18].some(function(dl){
+    var E = dl ? D.map(function(v){ return v - dl; }) : D, res = evenOdd(isoLoops(E, nx, ny, x0, y0).map(function(l){ return simplifyLoop(l, 0.9); }).filter(function(l){ return l.length > 2; })), tp = topo(res);
+    if(!first) first = res;
+    if(tp[0] <= Math.max(tA[0], tB[0]) && tp[0] >= 1 && tp[1] >= Math.min(tA[1], tB[1])){ loops = res; return true; }
+    return false;
+  });
+  loops = loops || first;
+  var n0 = bA.x0 + (bB.x0 - bA.x0) * t, n1 = bA.x1 + (bB.x1 - bA.x1) * t, kx = fit ? (n1 - n0) / wa : 1;
+  return loops.map(function(l){ return l.map(function(q){ return [fit ? n0 + (q[0] - bA.x0) * kx : q[0] - cx * t, q[1] - dy * t]; }); });
+}
+/* A, B: the same letter in two fonts, set in the same vertical frame. t: share of B (0..1). */
+function crossPolys(kA, A, wA, kB, B, wB, t){
+  var w = wA + (wB - wA) * t;
+  if(!A.length || !B.length || !(t > 0)) return {w: t > 0 ? w : wA, polys: A};
+  if(t >= 1) return {w: wB, polys: B};
+  var pa = partsOf(A), pb = partsOf(B), loops = [];
+  if(pa.length !== pb.length || pa.length > 6){ pa = [{polys: A, b: pbox(A)}]; pb = [{polys: B, b: pbox(B)}]; }
+  pa.forEach(function(c, i){ loops = loops.concat(crossPart(kA + '#' + i + '/' + pa.length, c.polys, c.b, kB + '#' + i + '/' + pb.length, pb[i].polys, pb[i].b, t)); });
+  var polys = unionPos(evenOdd(loops));
+  return {w: w, polys: polys.length ? polys : A};
+}
+function normMix(m){ return (m && typeof m.id === 'string') ? {id: m.id, t: clamp(m.t, 0, 100, 50), dA: clamp(m.dA, -70, 130, 0), d: clamp(m.d, -70, 130, 0), xD: clamp(m.xD, 100, 1200, 500), aD: clamp(m.aD, 150, 1500, 700)} : null; }
 /*GEOM-END*/
 
 /* ---------- helpers ---------- */
@@ -880,7 +994,7 @@ function ensureFonts(ids){
     });
   });
 }
-function donorP(spec){ var D = spec.donneur, xT = Math.min(D.xT * D.xh / 100, D.aT - 20); return {sx: D.sx, d: D.d, r: D.r, xD: D.xD, aD: D.aD, xT: xT, aT: D.aT, st: D.st, sty: D.sty}; }
+function donorP(spec){ var D = spec.donneur, xT = Math.min(D.xT * D.xh / 100, D.aT - 20); return {sx: D.sx, d: D.d, r: D.r, xD: D.xD, aD: D.aD, xT: xT, aT: D.aT, st: D.st, sty: D.sty, mix: D.mix}; }
 function gp(spec, ch){
   var k = sig(spec) + '|' + ch;
   if(!(k in cache)){
@@ -891,6 +1005,7 @@ function gp(spec, ch){
   }
   return cache[k];
 }
+function donIds(spec){ var D = spec && spec.donneur; return D ? (D.mix ? [D.id, D.mix.id] : [D.id]) : []; }
 function fillDonor(spec){ if(spec.donneur && LIBMAP[spec.donneur.id]) Array.from(LIBCHARS).forEach(function(c){ gp(spec, c); }); }
 var uid = 0;
 function prep(p){ var s = normSpec(p); s._id = ++uid; return s; }
@@ -1111,9 +1226,10 @@ function pisteCard(p, i){
   return '<article class="card"><div class="row" style="justify-content:space-between"><h4>' + esc(p.nom) + '</h4><span class="tag">' + esc(p.categorie || p.plume.forme) + '</span></div><div class="spec">' + textSVG(p, word, 62, false) + '</div><p>' + esc(p.description) + '</p><button type="button" class="ghost" data-dev="' + i + '">Développer cette piste</button></article>';
 }
 function renderPistes(){
-  var need = pistes.filter(function(p){ return p.donneur && !LIBMAP[p.donneur.id]; }).map(function(p){ return p.donneur.id; });
+  var need = []; pistes.forEach(function(p){ donIds(p).forEach(function(id){ if(!LIBMAP[id]) need.push(id); }); });
   if(need.length && !renderPistes.busy){ renderPistes.busy = true; ensureFonts(need).then(function(){ renderPistes.busy = false; if(need.some(function(id){ return LIBMAP[id]; })) renderPistes(); }, function(){ renderPistes.busy = false; }); }
   $('pistes').innerHTML = pistes.map(pisteCard).join('');
+  renderCross();
   $('pistes-ex').hidden = !pistesAreExamples;
 }
 $('pistes').addEventListener('click', function(e){ var b = e.target.closest('[data-dev]'); if(b) develop(pistes[+b.dataset.dev]); });
@@ -1130,6 +1246,7 @@ var SLIDERS = [
   {k: 'dsx', label: 'Donneuse : largeur', min: 0.55, max: 1.8, step: 0.01, don: 1, get: function(){ return font.donneur ? font.donneur.sx : 1; }, set: function(v){ if(font.donneur) font.donneur.sx = v; }},
   {k: 'dxh', label: 'Donneuse : hauteur d\'x (%)', min: 70, max: 130, step: 1, don: 1, get: function(){ return font.donneur ? font.donneur.xh : 100; }, set: function(v){ if(font.donneur) font.donneur.xh = v; }},
   {k: 'dst', label: 'Donneuse : caractère de tes lettres (%)', min: 0, max: 150, step: 5, don: 1, get: function(){ return font.donneur ? font.donneur.st : 0; }, set: function(v){ if(font.donneur) font.donneur.st = v; }},
+  {k: 'dmix', label: 'Croisement : part de la seconde structure (%)', min: 0, max: 100, step: 5, don: 1, mix: 1, get: function(){ return font.donneur && font.donneur.mix ? font.donneur.mix.t : 0; }, set: function(v){ if(font.donneur && font.donneur.mix) font.donneur.mix.t = v; }},
   {k: 'dr', label: 'Donneuse : arrondi des angles', min: 0, max: 40, step: 1, don: 1, get: function(){ return font.donneur ? font.donneur.r : 0; }, set: function(v){ if(font.donneur) font.donneur.r = v; }},
   {k: 'taille', label: 'Taille d\'aperçu (px)', min: 28, max: 200, step: 2, get: function(){ return view.size; }, set: function(v){ view.size = v; }}
 ];
@@ -1146,7 +1263,7 @@ function syncSliders(){
   SLIDERS.forEach(function(s){ $('s-' + s.k).value = s.get(); $('o-' + s.k).textContent = s.get(); });
   var cal = font.plume.forme === 'plume' || font.plume.forme === 'pinceau';
   $('s-contraste').disabled = !cal; $('s-angle').disabled = !cal;
-  SLIDERS.forEach(function(s){ if(s.don) $('s-' + s.k).disabled = !font.donneur; });
+  SLIDERS.forEach(function(s){ if(s.don) $('s-' + s.k).disabled = !font.donneur || (s.mix && !font.donneur.mix) || (s.k === 'dst' && !font.donneur.sty); });
 }
 var raf = 0;
 function queueRender(){ cache = {}; if(font.donneur) font._comp = null; cancelAnimationFrame(raf); raf = requestAnimationFrame(function(){ renderSpecimen(); save(); }); }
@@ -1166,7 +1283,7 @@ function renderGlyphs(){
 function renderAtelier(){
   $('font-name').textContent = font.nom; $('font-desc').textContent = font.description; $('font-ex').hidden = !fontIsExample;
   syncSliders(); renderSpecimen(); renderGlyphs();
-  if(font.donneur && !LIBMAP[font.donneur.id]) ensureFonts([font.donneur.id]).then(function(){ cache = {}; font._comp = null; renderSpecimen(); renderGlyphs(); }).catch(function(){ setStatus($('dev-status'), 'La bibliothèque de polices n\'a pas pu être chargée. Recharge la page.', 'err'); });
+  if(donIds(font).some(function(id){ return !LIBMAP[id]; })) ensureFonts(donIds(font)).then(function(){ cache = {}; font._comp = null; renderSpecimen(); renderGlyphs(); }).catch(function(){ setStatus($('dev-status'), 'La bibliothèque de polices n\'a pas pu être chargée. Recharge la page.', 'err'); });
   $('retry').hidden = !missing.length;
 }
 $('try').oninput = function(){ renderSpecimen(); };
@@ -1275,6 +1392,56 @@ $('gen').onclick = async function(){
   finally { btn.disabled = false; }
 };
 
+/* ---- crossing two pistes, or carrying the character of the traced letters over to a piste (no AI) ---- */
+function renderCross(){
+  var don = pistes.map(function(p, i){ return [p, i]; }).filter(function(x){ return x[0].donneur; });
+  $('cross').hidden = !don.length;
+  var base = don.filter(function(x){ return !x[0].donneur.mix; }), opt = function(list){ return list.map(function(x){ return '<option value="' + x[1] + '">' + esc(x[0].nom) + '</option>'; }).join(''); };
+  var keep = function(id, html, def){ var el = $(id), v = el.value; el.innerHTML = html; if(v && el.querySelector('option[value="' + v + '"]')) el.value = v; else if(def !== undefined && el.options[def]) el.selectedIndex = def; };
+  keep('x-a', opt(base), 0); keep('x-b', opt(base), 1); keep('x-c', opt(don), 0);
+  $('x-go').disabled = base.length < 2;
+}
+function addPiste(p){ pistes = pistes.concat([p]).slice(-8); pistesAreExamples = false; renderPistes(); save(); var cards = $('pistes').children; if(cards.length) cards[cards.length - 1].scrollIntoView({behavior: 'smooth', block: 'center'}); }
+function crossLetter(){ var used = {}; pistes.forEach(function(p){ var m = /^Croisement (\d+)$/.exec(p.nom); if(m) used[m[1]] = 1; }); for(var n = 1; used[n]; n++); return n; }
+$('x-go').onclick = async function(){
+  var st = $('x-status'), A = pistes[+$('x-a').value], B = pistes[+$('x-b').value];
+  if(!A || !B || !A.donneur || !B.donneur) return;
+  if(A === B || A.donneur.id === B.donneur.id){ setStatus(st, 'Choisis deux structures différentes.', 'err'); return; }
+  this.disabled = true; setStatus(st, 'Croisement des deux structures', 'busy');
+  try {
+    await ensureFonts([A.donneur.id, B.donneur.id]);
+    var LA = LIBMAP[A.donneur.id], LB = LIBMAP[B.donneur.id]; if(!LA || !LB) throw new Error('lib');
+    var D = JSON.parse(JSON.stringify(A.donneur)); D.mix = {id: LB.id, t: 50, dA: D.d, d: B.donneur.d, xD: B.donneur.xD, aD: B.donneur.aD}; D.d = 0; D.sty = null; D.st = 0;
+    addPiste(prep({nom: 'Croisement ' + crossLetter(), categorie: A.categorie === B.categorie ? A.categorie : 'Croisement', description: 'Croisement par calcul de deux structures libres (licence OFL) : ' + LA.nom + ' ' + LA.graisse + ' et ' + LB.nom + ' ' + LB.graisse + '. Chaque lettre est la forme intermédiaire entre les deux.', metriques: A.metriques, glyphes: {}, donneur: D}));
+    setStatus(st, 'Croisement ajouté aux pistes, à parts égales. Développe-le : le curseur « Croisement » de l\'atelier règle la part de chaque structure.' + (A.categorie !== B.categorie ? ' Ces deux structures ne sont pas de la même famille : certaines lettres peuvent se déformer ou s\'affiner.' : ''));
+  } catch(e){ setStatus(st, 'La bibliothèque de polices n\'a pas pu être chargée. Recharge la page et réessaie.', 'err'); }
+  finally { renderCross(); }
+};
+$('x-own').onclick = async function(){
+  var st = $('x-status'), A = pistes[+$('x-c').value]; if(!A || !A.donneur) return;
+  if(!shapes.some(function(s){ return s.ch; })){ setStatus(st, 'Aucune lettre détourée pour l\'instant. Va dans l\'onglet Reproduire, dépose l\'image de tes lettres et indique lesquelles (étapes 1 à 3), puis reviens ici.', 'err'); return; }
+  var glyphes = tracedGlyphes(); if(!glyphes) return;
+  if(!tp.scale) harmonize(glyphes, tp.side);
+  this.disabled = true; setStatus(st, 'Mesure du caractère de tes lettres', 'busy');
+  try {
+    await ensureFonts(donIds(A));
+    var L = LIBMAP[A.donneur.id]; if(!L) throw new Error('lib');
+    var tc = getComp(prep({glyphes: glyphes})), tg = function(c){ return tc[c]; }, P = donorP(A), k = 0;
+    var tx = topOf(tg, XL), ta = topOf(tg, AL), tcap = topOf(tg, CL_), lc = topOf(function(c){ return adapt(L, c, P); }, CL_);
+    if(isFinite(tx)) k = P.xT / tx; else if(isFinite(ta)) k = P.aT / ta; else if(isFinite(tcap) && isFinite(lc)) k = lc / tcap;
+    if(!(k > 0)){ setStatus(st, 'Tes lettres détourées ne permettent pas de caler l\'échelle : indique au moins une lettre minuscule ou capitale.', 'err'); return; }
+    /* traced letters brought to the scale of the piste, then the style is measured exactly as in the Reproduire tab */
+    var tcl = {}; Object.keys(glyphes).forEach(function(c){ if(tc[c] && tc[c].polys.length) tcl[c] = {w: tc[c].w * k, polys: tc[c].polys.map(function(p){ return p.map(function(q){ return [q[0] * k, q[1] * k]; }); })}; });
+    var Q = {sx: P.sx, d: P.d, r: P.r, xD: P.xD, aD: P.aD, xT: P.xT, aT: P.aT, mix: P.mix}, Y = measureStyle(L, tcl, Q, true), has = Y.wa || Y.sl || Y.f || Y.th.some(function(v){ return v; });
+    if(!Y.gain){ setStatus(st, 'Aucune de tes lettres détourées (' + Object.keys(tcl).join(' ') + ') n\'existe dans cette structure : rien à mesurer.', 'err'); return; }
+    if(!has){ setStatus(st, 'Aucun trait de style mesurable à reporter sur cette piste avec ces lettres (' + Object.keys(tcl).join(' ') + ').', 'err'); return; }
+    var D = JSON.parse(JSON.stringify(A.donneur)); D.sty = Y; D.st = 100;
+    addPiste(prep({nom: (A.nom + ', à ta main').slice(0, 40), categorie: A.categorie, description: A.description.replace(/ Caractère de tes lettres.*$/, '') + ' Caractère de tes lettres (' + Object.keys(tcl).join(' ') + ') reporté par mesure.', metriques: A.metriques, glyphes: {}, donneur: D}));
+    setStatus(st, styleNote(Y).replace('sur la donneuse', 'sur la piste').replace('Curseur « caractère de tes lettres » pour doser.', 'Développe la nouvelle piste : le curseur « caractère de tes lettres » de l\'atelier dose le report.'));
+  } catch(e){ setStatus(st, 'La bibliothèque de polices n\'a pas pu être chargée. Recharge la page et réessaie.', 'err'); }
+  finally { this.disabled = false; }
+};
+
 /* ---- generate pistes : drawn by the AI (optional) ---- */
 $('gen-ai').onclick = async function(){
   var st = $('gen-status'), btn = this, sample = await getSample();
@@ -1358,7 +1525,7 @@ function develop(p){
     font = prep(JSON.parse(JSON.stringify({nom: p.nom, categorie: p.categorie, description: p.description, metriques: p.metriques, glyphes: {}, donneur: p.donneur})));
     fontIsExample = false; missing = []; cache = {}; $('fname').value = font.nom; $('try').value = $('mot').value.trim() || 'VIEWZ';
     renderAtelier(); save(); $('atelier').scrollIntoView({behavior: 'smooth', block: 'start'});
-    setStatus($('dev-status'), 'Alphabet complet, repris de la structure de la police libre. Les curseurs « Donneuse » règlent la graisse, la largeur, la hauteur d\'x et l\'arrondi.');
+    setStatus($('dev-status'), p.donneur.mix ? 'Alphabet complet, croisé entre deux structures libres. Le curseur « Croisement » règle la part de la seconde structure, les curseurs « Donneuse » la graisse, la largeur, la hauteur d\'x et l\'arrondi.' : 'Alphabet complet, repris de la structure de la police libre. Les curseurs « Donneuse » règlent la graisse, la largeur, la hauteur d\'x et l\'arrondi.');
     return;
   }
   font = prep(JSON.parse(JSON.stringify({nom: p.nom, categorie: p.categorie, description: p.description, plume: p.plume, inclinaison: p.inclinaison, espacement: p.espacement, metriques: p.metriques, glyphes: p.glyphes})));
@@ -1376,14 +1543,14 @@ $('export').onclick = async function(){
   try {
     /* accents are transliterated (é gives e), not dropped : font and file names must stay ASCII */
     var family = (font.nom || 'VIEWZ Type').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/œ/g, 'oe').replace(/Œ/g, 'OE').replace(/æ/g, 'ae').replace(/Æ/g, 'AE').replace(/[^\w \-]/g, '').replace(/\s+/g, ' ').trim() || 'VIEWZ Type', slug = family.replace(/\s+/g, '-');
-    if(font.donneur){ await ensureFonts([font.donneur.id]); fillDonor(font); }
+    if(font.donneur){ await ensureFonts(donIds(font)); fillDonor(font); }
     var f = buildFont(font, getComp(font), family), buf = f.toArrayBuffer();
     var zip = new JSZip();
     zip.file(slug + '.otf', buf);
     zip.file(slug + '-planche.svg', textSVG(font, $('try').value || family, 200, false).replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" fill="#111" '));
     zip.file(slug + '-source.json', JSON.stringify({nom: font.nom, categorie: font.categorie, description: font.description, plume: font.plume, inclinaison: font.inclinaison, espacement: font.espacement, metriques: font.metriques, glyphes: font.glyphes}));
     zip.file('LISEZMOI.txt', family + "\nPolice dessinée avec VIEWZ Type (VIEWZ Studio, viewz-studio.com).\n\nInstallation sur Mac : double-clique sur le fichier .otf, puis sur Installer dans le Livre des polices.\nInstallation sur Windows : clic droit sur le fichier .otf, puis Installer.\n\nContenu : la police (.otf), une planche vectorielle (.svg) et la source du dessin (.json).\nCette police est une base de travail. Pour un usage professionnel, retouche les courbes et les approches dans Glyphs ou FontForge.\n");
-    if(font.donneur && LIBMAP[font.donneur.id]) zip.file('LICENCE-OFL.txt', "Les glyphes reconstruits de cette police dérivent de la police libre " + LIBMAP[font.donneur.id].nom + " (copyright de ses auteurs, voir fonts.google.com), distribuée sous licence SIL Open Font License 1.1.\nLa police dérivée reste soumise à cette même licence : https://openfontlicense.org\nElle peut être utilisée librement dans des créations, y compris commerciales. Le fichier de police lui-même ne peut pas être vendu seul, et ne doit pas porter le nom de la police d'origine.\n");
+    if(font.donneur && LIBMAP[font.donneur.id]) zip.file('LICENCE-OFL.txt', "Les glyphes reconstruits de cette police dérivent " + (font.donneur.mix && LIBMAP[font.donneur.mix.id] ? "des polices libres " + LIBMAP[font.donneur.id].nom + " et " + LIBMAP[font.donneur.mix.id].nom + " (copyright de leurs auteurs, voir fonts.google.com), distribuées" : "de la police libre " + LIBMAP[font.donneur.id].nom + " (copyright de ses auteurs, voir fonts.google.com), distribuée") + " sous licence SIL Open Font License 1.1.\nLa police dérivée reste soumise à cette même licence : https://openfontlicense.org\nElle peut être utilisée librement dans des créations, y compris commerciales. Le fichier de police lui-même ne peut pas être vendu seul, et ne doit pas porter le nom d'une police d'origine.\n");
     var blob = await zip.generateAsync({type: 'blob'});
     await dl.save({filename: slug + '.zip', data: blob});
     setStatus(st, 'Archive enregistrée : elle contient ' + slug + '.otf, la planche SVG et un mode d\'emploi.');
