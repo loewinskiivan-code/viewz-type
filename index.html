@@ -1451,7 +1451,7 @@ function pisteCard(p, i){
 }
 function renderPistes(){
   var need = []; pistes.forEach(function(p){ donIds(p).forEach(function(id){ if(!LIBMAP[id]) need.push(id); }); });
-  if(need.length && !renderPistes.busy){ renderPistes.busy = true; ensureFonts(need).then(function(){ renderPistes.busy = false; if(need.some(function(id){ return LIBMAP[id]; })) renderPistes(); }, function(){ renderPistes.busy = false; }); }
+  if(need.length && !renderPistes.busy){ renderPistes.busy = true; ensureFonts(need).then(function(){ renderPistes.busy = false; if(need.some(function(id){ return LIBMAP[id]; })){ /* letters asked for before the fonts were there were remembered as missing : forget them */ cache = {}; pistes.forEach(function(p){ p._comp = null; }); renderPistes(); } }, function(){ renderPistes.busy = false; }); }
   $('pistes').innerHTML = pistes.map(pisteCard).join('');
   renderCross();
   $('pistes-ex').hidden = !pistesAreExamples;
