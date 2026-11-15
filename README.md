@@ -12,7 +12,7 @@ Démonstration : https://loewinskiivan-code.github.io/viewz-type/
 
 - **Rechercher** : dépose une image de lettres, l'app mesure les formes et propose les polices les plus proches parmi 2 032 polices (1 360 familles) du catalogue Google Fonts.
 - **Reproduire** : à partir de quelques lettres à toi (dessin, calligraphie, broderie, image générée), l'app détoure tes lettres, choisit une police libre « donneuse » proche, l'ajuste à tes mesures et construit un alphabet complet. Une jauge indique quelles lettres fournir pour gagner en fidélité.
-- **Créer** : des pistes guidées (linéales, empattements, médiévales, manuscrites, etc.) pour orienter une création, avec planches d'alphabet et export .otf.
+- **Créer** : des pistes guidées (linéales, empattements, médiévales, manuscrites, etc.) construites par calcul sur de vraies polices libres, choisies selon la famille, la graisse, la largeur et l'ambiance du brief. Deux pistes peuvent être croisées (chaque lettre devient la forme intermédiaire entre les deux), et le caractère de tes propres lettres peut être reporté sur une piste. Planches d'alphabet et export .otf.
 
 ## Utilisation
 
