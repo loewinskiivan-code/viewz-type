@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VIEWZ Type</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout idea: a type specimen sheet. Grey paper, black ink, vermilion rubrics; metric lines are the ornament. */
+:root{
+  --paper:#E7E9E4; --sheet:#F7F7F3; --ink:#15171A; --muted:#5E6367; --line:#C6C9C1; --accent:#C8321A; --on-accent:#FFFFFF;
+  --display:"Bodoni Moda","Didot","Bodoni MT",Georgia,serif;
+  --body:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--paper:#131415;--sheet:#1C1E20;--ink:#ECE9E1;--muted:#9B9E9A;--line:#35383B;--accent:#F15A3D;--on-accent:#131415;color-scheme:dark}
+}
+:root[data-theme="dark"]{--paper:#131415;--sheet:#1C1E20;--ink:#ECE9E1;--muted:#9B9E9A;--line:#35383B;--accent:#F15A3D;--on-accent:#131415;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font:400 16px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 18px 64px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;padding:22px 0 14px;border-bottom:2px solid var(--ink)}
+.mark{font:700 30px/1 var(--display);letter-spacing:-.01em;margin:0}
+.mark i{font-weight:500;color:var(--accent)}
+nav{display:flex;gap:6px}
+nav a{font:500 14px/1 var(--body);text-decoration:none;color:var(--ink);padding:10px 14px;border:1px solid var(--line);border-radius:2px}
+nav a[aria-current="page"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+h2{font:500 clamp(26px,5vw,40px)/1.08 var(--display);margin:28px 0 6px;text-wrap:balance}
+h2 i{color:var(--accent)}
+h3{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+p.lead{color:var(--muted);max-width:62ch;margin:0 0 20px}
+.sheet{background:var(--sheet);border:1px solid var(--line);border-radius:2px;padding:18px}
+.stack{display:flex;flex-direction:column;gap:18px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button,.btn{font:600 15px/1 var(--body);padding:13px 18px;border-radius:2px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);cursor:pointer}
+button.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+button.accent{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+button:disabled{opacity:.45;cursor:default}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input[type=text],textarea,select{font:400 16px/1.4 var(--body);color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:2px;padding:11px 12px;width:100%}
+textarea{min-height:76px;resize:vertical}
+label.f{display:flex;flex-direction:column;gap:6px;font:500 13px/1.2 var(--body);color:var(--muted);flex:1 1 220px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:500 14px/1 var(--body);padding:9px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.group{display:flex;flex-direction:column;gap:8px}
+.brief{font:400 13px/1.5 var(--mono);color:var(--muted);border-left:3px solid var(--accent);padding:2px 0 2px 12px;white-space:pre-wrap}
+.status{font:400 13px/1.5 var(--mono);color:var(--muted);min-height:20px}
+.status.err{color:var(--accent)}
+.tag{display:inline-block;font:500 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:5px 7px;border:1px solid var(--line);border-radius:2px;color:var(--muted)}
+.tag.ex{border-color:var(--accent);color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.card{background:var(--sheet);border:1px solid var(--line);border-radius:2px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card h4{font:500 22px/1.1 var(--display);margin:0}
+.card p{margin:0;font-size:14px;color:var(--muted)}
+.card .spec{min-height:86px;display:flex;align-items:center;overflow:hidden;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px 0}
+svg.t{display:block;max-width:100%;height:auto;fill:var(--ink)}
+svg.t .g{stroke:var(--accent);stroke-width:1;vector-effect:non-scaling-stroke;opacity:.55}
+svg.t text{font:400 22px var(--mono);fill:var(--accent)}
+.specimen{background:var(--sheet);border:1px solid var(--line);border-radius:2px;padding:16px;overflow:hidden;display:flex;flex-direction:column;gap:4px;min-height:150px}
+.sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px 18px}
+.sl{display:flex;flex-direction:column;gap:4px;font:500 13px/1.2 var(--body);color:var(--muted)}
+.sl span{display:flex;justify-content:space-between}
+.sl output{font:400 13px var(--mono);color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.glyphs{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:4px}
+.glyphs div{border:1px solid var(--line);border-radius:2px;padding:6px 4px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--paper)}
+.glyphs small{font:400 10px var(--mono);color:var(--muted)}
+.glyphs svg{height:38px;width:auto}
+.drop{border:1.5px dashed var(--ink);border-radius:2px;padding:26px 16px;text-align:center;background:var(--sheet);display:flex;flex-direction:column;gap:10px;align-items:center}
+.shapes{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+.shape{background:var(--sheet);border:1px solid var(--line);border-radius:2px;padding:8px;display:flex;flex-direction:column;gap:6px;align-items:center}
+.shape svg{height:84px;width:100%;fill:var(--ink)}
+.shape input{text-align:center;font:500 20px var(--display);padding:6px}
+#r-mask{max-width:100%;height:auto;border:1px solid var(--line);display:block}
+.drop.over{background:var(--paper);border-color:var(--accent)}
+.drop img{max-width:100%;max-height:220px;border:1px solid var(--line)}
+.match .spec{font-size:34px;line-height:1.15;min-height:70px;word-break:break-word}
+.score{font:500 13px var(--mono);color:var(--accent);font-variant-numeric:tabular-nums}
+.bar{height:3px;background:var(--line)}.bar b{display:block;height:3px;background:var(--accent)}
+a.lk{color:var(--ink);font-weight:500;font-size:14px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.facts dt{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.facts dd{margin:2px 0 0;font:500 20px/1.2 var(--display)}
+ul.tr{margin:0;padding-left:18px;font-size:14px;color:var(--muted)}
+footer{margin-top:40px;padding-top:12px;border-top:1px solid var(--line);font:400 12px var(--mono);color:var(--muted)}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:no-preference){.busy::after{content:"";display:inline-block;width:8px;height:8px;margin-left:8px;border-radius:50%;background:var(--accent);animation:p 1s infinite alternate}@keyframes p{to{opacity:.2}}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <p class="mark">VIEWZ <i>Type</i></p>
+  <nav aria-label="Outils">
+    <a href="#recherche" id="nav-recherche">Rechercher</a>
+    <a href="#reproduire" id="nav-reproduire">Reproduire</a>
+    <a href="#creation" id="nav-creation">Créer</a>
+  </nav>
+</header>
+
+<!-- ============ RECHERCHE ============ -->
+<main id="view-recherche">
+  <h2>Retrouver une <i>typographie</i> à partir d'une image</h2>
+  <p class="lead">Dépose une photo ou une capture d'écran d'un texte. L'IA lit les lettres, nomme la police la plus probable et te propose les familles Google Fonts les plus ressemblantes, gratuites et utilisables en commercial.</p>
+  <div class="stack">
+    <div class="drop" id="drop">
+      <img id="shot" alt="Image à analyser" hidden>
+      <div id="drop-hint"><strong>Glisse une image ici</strong>, colle-la, ou choisis un fichier.<br><span style="color:var(--muted);font-size:14px">Conseil : cadre serré sur une seule ligne de texte, bien nette. JPG, PNG ou WebP.</span></div>
+      <div class="row" style="justify-content:center">
+        <input type="file" id="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+        <button class="ghost" id="pick" type="button">Choisir une image</button>
+        <button class="accent" id="analyze" type="button" disabled>Identifier la typographie</button>
+      </div>
+    </div>
+    <label class="f">Précision facultative (ex. logo d'un restaurant, affiche années 50)
+      <input type="text" id="note" autocomplete="off">
+    </label>
+    <div class="status" id="id-status" role="status"></div>
+
+    <section class="sheet stack" id="id-result" hidden>
+      <dl class="facts" id="id-facts"></dl>
+      <ul class="tr" id="id-traits"></ul>
+      <div class="row">
+        <label class="f">Texte de comparaison<input type="text" id="id-text" autocomplete="off"></label>
+        <button class="ghost" id="to-create" type="button">Créer une police dans cet esprit</button>
+      </div>
+    </section>
+
+    <div>
+      <h3 id="match-title">Exemple de résultat <span class="tag ex">exemple</span></h3>
+      <div class="grid" id="matches"></div>
+    </div>
+  </div>
+</main>
+
+<!-- ============ REPRODUIRE ============ -->
+<main id="view-reproduire" hidden>
+  <h2>Reproduire une <i>typographie</i> depuis une image</h2>
+  <p class="lead">Dépose une image de lettres : deux lettres suffisent, une planche d'alphabet complète marche aussi. L'app détoure chaque forme, tu indiques à quelle lettre elle correspond, et elles deviennent les glyphes d'une vraie police.</p>
+  <div class="stack">
+    <div class="drop" id="r-drop">
+      <canvas id="r-mask" hidden></canvas>
+      <div id="r-hint"><strong>Glisse une image ici</strong>, colle-la, ou choisis un fichier.<br><span style="color:var(--muted);font-size:14px">Le mieux : des lettres bien contrastées sur un fond uni. JPG, PNG ou WebP.</span></div>
+      <div class="row" style="justify-content:center">
+        <input type="file" id="r-file" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+        <button class="ghost" id="r-pick" type="button">Choisir une image</button>
+      </div>
+    </div>
+    <div class="status" id="r-status" role="status"></div>
+    <div class="stack" id="r-controls" hidden>
+      <section class="sheet stack">
+        <h3>1 · Détourage</h3>
+        <p style="margin:0;font-size:14px;color:var(--muted)">L'aperçu ci-dessus montre ce que l'app garde. Si des lettres manquent ou si le fond est pris, bouge le seuil.</p>
+        <div class="sliders" id="r-sliders"></div>
+      </section>
+      <section class="stack">
+        <h3>2 · Les formes trouvées <span class="tag" id="r-count"></span></h3>
+        <div class="row" style="align-items:flex-end">
+          <label class="f" style="flex:3 1 240px">Lettres, dans l'ordre de lecture (ex. ab, ou ABCDEFG…)<input type="text" id="r-order" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
+          <button class="ghost" id="r-read" type="button">Lire les lettres avec l'IA</button>
+        </div>
+        <div id="r-cover" style="font-size:14px;line-height:1.5" hidden></div>
+        <div class="shapes" id="r-shapes"></div>
+      </section>
+      <section class="sheet stack">
+        <h3>3 · La police</h3>
+        <div class="sliders" id="r-sliders2"></div>
+        <label style="display:flex;gap:10px;align-items:flex-start;font-size:14px;cursor:pointer"><input type="checkbox" id="r-derive" checked style="margin-top:3px;flex:none"><span>Construire d'autres lettres à partir des tiennes (<b>b</b> donne d, p, q, l, i, o · <b>n</b> donne m, u, h, r · <b>v</b> donne w) et poser les accents sur tes propres lettres</span></label>
+        <div class="row">
+          <button class="accent" id="r-match" type="button">Reconstruire un alphabet complet</button>
+          <button class="ghost" id="r-build" type="button">Garder seulement ces lettres</button>
+          <button class="ghost" id="r-find" type="button">Chercher la police existante la plus proche</button>
+        </div>
+        <p style="margin:0;font-size:13px;color:var(--muted);max-width:70ch">La reconstruction se fait par calcul, sans IA : l'app compare tes lettres à celles d'environ 2 000 polices libres (bibliothèque Google Fonts, licence OFL), mesure finement les plus proches par superposition, puis ajuste la structure de la police choisie (graisse, largeur, hauteur d'x, arrondi) à tes mesures. Tes lettres détourées remplacent celles de la police.</p>
+      </section>
+      <section class="stack" id="r-matchbox" hidden>
+        <h3>4 · Structures les plus proches <span class="tag" id="r-libcount"></span></h3>
+        <div class="grid" id="r-matches"></div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<!-- ============ CREATION ============ -->
+<main id="view-creation" hidden>
+  <h2>Dessiner une <i>typographie</i> à partir d'un brief</h2>
+  <p class="lead">Choisis une ou plusieurs familles, règle l'ambiance, ajoute tes mots. Tu reçois quatre pistes, tu développes celle qui te plaît en alphabet complet, tu l'ajustes à la plume puis tu l'exportes en fichier de police.</p>
+
+  <div class="stack">
+    <section class="sheet stack" aria-labelledby="h-brief">
+      <h3 id="h-brief">1 · Le brief</h3>
+      <div class="group"><strong>Famille</strong><span style="font-size:13px;color:var(--muted)">Plusieurs choix possibles. Sans choix, les quatre pistes explorent des familles différentes.</span><div class="chips" id="c-famille"></div></div>
+      <div class="group"><strong>Graisse</strong><div class="chips" id="c-graisse"></div></div>
+      <div class="group"><strong>Largeur</strong><div class="chips" id="c-largeur"></div></div>
+      <div class="group"><strong>Ambiance</strong><div class="chips" id="c-ambiance"></div></div>
+      <div class="row" style="align-items:flex-start">
+        <label class="f" style="flex:2 1 300px">Tes précisions (facultatif)
+          <textarea id="precisions" placeholder="Ex. une gothique moderne pour une marque de streetwear, lisible en petit, avec des terminaisons en biseau"></textarea>
+        </label>
+        <label class="f" style="flex:1 1 160px">Mot d'essai des pistes
+          <input type="text" id="mot" value="VIEWZ" maxlength="14" autocomplete="off">
+        </label>
+      </div>
+      <div class="brief" id="brief"></div>
+      <div class="row">
+        <button class="accent" id="gen" type="button">Générer 4 pistes</button>
+        <div class="status" id="gen-status" role="status"></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-pistes">
+      <h3 id="h-pistes">2 · Les pistes <span class="tag ex" id="pistes-ex">exemples</span></h3>
+      <div class="grid" id="pistes"></div>
+    </section>
+
+    <section class="stack" aria-labelledby="h-atelier" id="atelier">
+      <h3 id="h-atelier">3 · L'atelier <span class="tag ex" id="font-ex">exemple</span></h3>
+      <div class="row" style="justify-content:space-between">
+        <div><strong id="font-name" style="font:500 26px/1.1 var(--display)"></strong><div id="font-desc" style="font-size:14px;color:var(--muted)"></div></div>
+        <span class="tag" id="font-count"></span>
+      </div>
+      <div class="specimen" id="specimen"></div>
+      <div class="row">
+        <label class="f" style="flex:3 1 260px">Texte d'essai<input type="text" id="try" autocomplete="off"></label>
+        <label class="f" style="flex:1 1 120px">Nom de la police<input type="text" id="fname" maxlength="30" autocomplete="off"></label>
+      </div>
+      <div class="sheet sliders" id="sliders"></div>
+      <div class="status" id="dev-status" role="status"></div>
+      <div class="row">
+        <button class="accent" id="export" type="button">Télécharger la police (.otf)</button>
+        <button class="ghost" id="retry" type="button" hidden>Dessiner les glyphes manquants avec l'IA</button>
+      </div>
+      <div class="status" id="exp-status" role="status"></div>
+      <details class="sheet"><summary style="cursor:pointer;font-weight:600">Tous les glyphes</summary><div class="glyphs" id="glyphs" style="margin-top:12px"></div></details>
+      <p style="font-size:13px;color:var(--muted);max-width:70ch;margin:0">Chaque lettre est un squelette tracé par l'IA, habillé par une plume réglable. Le fichier exporté est une vraie police installable, avec les accents français. C'est une base de travail : pour un usage professionnel, prévois une retouche des courbes et des approches dans Glyphs ou FontForge.</p>
+    </section>
+  </div>
+</main>
+
+<section id="ai-box" hidden style="margin-top:28px">
+  <details>
+    <summary style="cursor:pointer;font-weight:600">Réglages IA (optionnel)</summary>
+    <p style="font-size:14px;line-height:1.5">Sans clé, VIEWZ Type fonctionne sans IA : détourage, recherche par mesure dans la bibliothèque, reconstruction d'alphabet et export de police. Avec ta propre clé d'API Anthropic, l'identification d'une police par l'image, la lecture des lettres et la création par prompt s'activent. Les appels sont facturés sur ton compte Anthropic.</p>
+    <p style="font-size:14px;line-height:1.5">La clé reste dans ce navigateur (stockage local) et n'est envoyée qu'à api.anthropic.com. Ne l'enregistre pas sur un ordinateur partagé.</p>
+    <label for="ai-key" style="font-size:14px">Clé d'API Anthropic</label>
+    <input type="text" id="ai-key" autocomplete="off" spellcheck="false" placeholder="sk-ant-..." style="-webkit-text-security:disc">
+    <label for="ai-model" style="font-size:14px;display:block;margin-top:10px">Modèle</label>
+    <input type="text" id="ai-model" autocomplete="off" spellcheck="false" placeholder="claude-sonnet-5-5">
+    <div class="row" style="margin-top:12px;gap:10px"><button type="button" id="ai-save">Enregistrer</button><button type="button" id="ai-clear" class="ghost">Effacer la clé</button></div>
+    <p class="status" id="ai-status" role="status"></p>
+  </details>
+</section>
+<footer>VIEWZ Studio · viewz-studio.com · code sous licence MIT</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/clipper-lib@6.4.2/clipper.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+/*GEOM-START*/
+var S = 10;
+function clamp(v, a, b, d){ v = Number(v); return isFinite(v) ? Math.min(b, Math.max(a, v)) : d; }
+
+function parsePath(d){
+  var tk = String(d).match(/[MLHVQCZmlhvqcz]|-?\d*\.?\d+(?:e[-+]?\d+)?/g) || [];
+  var out = [], cur = null, x = 0, y = 0, sx = 0, sy = 0, i = 0, cmd = null;
+  var isCmd = function(t){ return /^[A-Za-z]$/.test(t); };
+  var need = {M:2, L:2, H:1, V:1, Q:4, C:6};
+  function start(){ if(!cur){ cur = [[x, y]]; out.push(cur); } }
+  while(i < tk.length){
+    if(isCmd(tk[i])) cmd = tk[i++];
+    else if(!cmd){ i++; continue; }
+    var rel = cmd === cmd.toLowerCase(), C = cmd.toUpperCase();
+    if(C === 'Z'){ if(cur && cur.length > 1) cur.push([sx, sy]); x = sx; y = sy; cur = null; cmd = null; continue; }
+    var n = need[C], ok = true, k;
+    for(k = 0; k < n; k++) if(i + k >= tk.length || isCmd(tk[i + k])) ok = false;
+    if(!ok){ while(i < tk.length && !isCmd(tk[i])) i++; cmd = null; continue; }
+    var a = []; for(k = 0; k < n; k++) a.push(parseFloat(tk[i++]));
+    var ox = rel ? x : 0, oy = rel ? y : 0, t, u;
+    if(C === 'M'){ x = ox + a[0]; y = oy + a[1]; cur = [[x, y]]; out.push(cur); sx = x; sy = y; cmd = rel ? 'l' : 'L'; }
+    else if(C === 'L'){ start(); x = ox + a[0]; y = oy + a[1]; cur.push([x, y]); }
+    else if(C === 'H'){ start(); x = ox + a[0]; cur.push([x, y]); }
+    else if(C === 'V'){ start(); y = oy + a[0]; cur.push([x, y]); }
+    else if(C === 'Q'){ start(); var qx = ox + a[0], qy = oy + a[1], ex = ox + a[2], ey = oy + a[3];
+      for(k = 1; k <= 10; k++){ t = k / 10; u = 1 - t; cur.push([u*u*x + 2*u*t*qx + t*t*ex, u*u*y + 2*u*t*qy + t*t*ey]); } x = ex; y = ey; }
+    else if(C === 'C'){ start(); var x1 = ox + a[0], y1 = oy + a[1], x2 = ox + a[2], y2 = oy + a[3], fx = ox + a[4], fy = oy + a[5];
+      for(k = 1; k <= 14; k++){ t = k / 14; u = 1 - t; cur.push([u*u*u*x + 3*u*u*t*x1 + 3*u*t*t*x2 + t*t*t*fx, u*u*u*y + 3*u*u*t*y1 + 3*u*t*t*y2 + t*t*t*fy]); } x = fx; y = fy; }
+  }
+  return out.map(function(l){ return l.filter(function(p){ return isFinite(p[0]) && isFinite(p[1]); }).map(function(p){ return [clamp(p[0], -600, 1800, 0), clamp(p[1], -600, 1400, 0)]; }); }).filter(function(l){ return l.length > 0; });
+}
+
+function hull(pts){
+  pts = pts.slice().sort(function(a, b){ return a.X - b.X || a.Y - b.Y; });
+  var cr = function(o, a, b){ return (a.X - o.X) * (b.Y - o.Y) - (a.Y - o.Y) * (b.X - o.X); };
+  var lo = [], up = [], i;
+  for(i = 0; i < pts.length; i++){ while(lo.length >= 2 && cr(lo[lo.length-2], lo[lo.length-1], pts[i]) <= 0) lo.pop(); lo.push(pts[i]); }
+  for(i = pts.length - 1; i >= 0; i--){ while(up.length >= 2 && cr(up[up.length-2], up[up.length-1], pts[i]) <= 0) up.pop(); up.push(pts[i]); }
+  lo.pop(); up.pop(); return lo.concat(up);
+}
+function nib(pen){
+  var W = pen.largeur, T = Math.max(8, W * (1 - pen.contraste)), a = pen.angle * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a), pts = [], i;
+  if(pen.forme === 'plume'){
+    [[-1,-1],[1,-1],[1,1],[-1,1]].forEach(function(c){ var px = c[0] * W / 2, py = c[1] * T / 2; pts.push([px * ca - py * sa, px * sa + py * ca]); });
+  } else {
+    for(i = 0; i < 16; i++){ var th = i / 16 * 2 * Math.PI, ex = Math.cos(th) * W / 2, ey = Math.sin(th) * T / 2; pts.push([ex * ca - ey * sa, ex * sa + ey * ca]); }
+  }
+  return pts;
+}
+function strokePolys(line, pen){
+  var CL = ClipperLib, W = pen.largeur, pts = [], i, res = [];
+  for(i = 0; i < line.length; i++){ var p = {X: Math.round(line[i][0] * S), Y: Math.round(line[i][1] * S)}; if(!pts.length || pts[pts.length-1].X !== p.X || pts[pts.length-1].Y !== p.Y) pts.push(p); }
+  if(!pts.length) return res;
+  var mono = pen.forme === 'ronde' || pen.forme === 'droite';
+  if(pts.length === 1){
+    var c = pts[0], r = W * 0.58 * S, shape;
+    if(pen.forme === 'ronde'){ shape = []; for(i = 0; i < 20; i++) shape.push({X: Math.round(c.X + r * Math.cos(i / 20 * 2 * Math.PI)), Y: Math.round(c.Y + r * Math.sin(i / 20 * 2 * Math.PI))}); }
+    else if(pen.forme === 'droite'){ shape = [{X: c.X - r, Y: c.Y - r}, {X: c.X + r, Y: c.Y - r}, {X: c.X + r, Y: c.Y + r}, {X: c.X - r, Y: c.Y + r}]; }
+    else { var nb = nib({forme: pen.forme, largeur: W * 1.1, contraste: Math.min(pen.contraste, 0.45), angle: pen.angle}); shape = hull(nb.map(function(q){ return {X: Math.round(c.X + q[0] * S), Y: Math.round(c.Y + q[1] * S)}; })); }
+    return [shape];
+  }
+  if(mono){
+    var co = new CL.ClipperOffset(3, 2.5), sol = new CL.Paths();
+    co.AddPath(pts, pen.forme === 'ronde' ? CL.JoinType.jtRound : CL.JoinType.jtMiter, pen.forme === 'ronde' ? CL.EndType.etOpenRound : CL.EndType.etOpenSquare);
+    co.Execute(sol, W / 2 * S);
+    if(pen.forme === 'droite'){
+      var ys = pts.map(function(q){ return q.Y; }), lo = Math.min.apply(null, ys) - W / 2 * S, hi = Math.max.apply(null, ys) + W / 2 * S, big = 4000 * S;
+      var cp = new CL.Clipper(), cut = new CL.Paths();
+      cp.AddPaths(sol, CL.PolyType.ptSubject, true);
+      cp.AddPath([{X: -big, Y: lo}, {X: big, Y: lo}, {X: big, Y: hi}, {X: -big, Y: hi}], CL.PolyType.ptClip, true);
+      cp.Execute(CL.ClipType.ctIntersection, cut, CL.PolyFillType.pftNonZero, CL.PolyFillType.pftNonZero);
+      sol = cut;
+    }
+    return sol;
+  }
+  var nbp = nib(pen);
+  for(i = 0; i < pts.length - 1; i++){
+    var all = [];
+    nbp.forEach(function(q){ all.push({X: Math.round(pts[i].X + q[0] * S), Y: Math.round(pts[i].Y + q[1] * S)}); all.push({X: Math.round(pts[i+1].X + q[0] * S), Y: Math.round(pts[i+1].Y + q[1] * S)}); });
+    res.push(hull(all));
+  }
+  return res;
+}
+/* lines: polylines in font units. Returns polygons (outer and holes, opposite windings) in font units. */
+function outline(lines, pen, slant){
+  var CL = ClipperLib, k = Math.tan((slant || 0) * Math.PI / 180), all = [];
+  lines.forEach(function(l){
+    var sl = k ? l.map(function(p){ return [p[0] + p[1] * k, p[1]]; }) : l;
+    strokePolys(sl, pen).forEach(function(poly){ if(poly.length > 2){ if(!CL.Clipper.Orientation(poly) && (pen.forme === 'plume' || pen.forme === 'pinceau')) poly.reverse(); all.push(poly); } });
+  });
+  if(!all.length) return [];
+  var c = new CL.Clipper(), sol = new CL.Paths();
+  c.AddPaths(all, CL.PolyType.ptSubject, true);
+  c.Execute(CL.ClipType.ctUnion, sol, CL.PolyFillType.pftNonZero, CL.PolyFillType.pftNonZero);
+  sol = CL.Clipper.CleanPolygons(sol, 0.4 * S);
+  return sol.filter(function(p){ return p.length > 2; }).map(function(p){ return p.map(function(q){ return [q.X / S, q.Y / S]; }); });
+}
+
+var FORMES = ['ronde', 'droite', 'plume', 'pinceau'];
+var MARKS = {'´': 1, '`': 1, 'ˆ': 1, '¨': 1, '¸': 1};
+var ALIAS = {'^': 'ˆ', '’': "'", 'ı': 'ı'};
+var COMPOSE = {'é':['e','´'],'è':['e','`'],'ê':['e','ˆ'],'ë':['e','¨'],'à':['a','`'],'â':['a','ˆ'],'ä':['a','¨'],'ù':['u','`'],'û':['u','ˆ'],'ü':['u','¨'],'î':['ı','ˆ'],'ï':['ı','¨'],'ô':['o','ˆ'],'ö':['o','¨'],'ç':['c','¸'],
+  'É':['E','´'],'È':['E','`'],'Ê':['E','ˆ'],'Ë':['E','¨'],'À':['A','`'],'Â':['A','ˆ'],'Ù':['U','`'],'Û':['U','ˆ'],'Ü':['U','¨'],'Î':['I','ˆ'],'Ï':['I','¨'],'Ô':['O','ˆ'],'Ç':['C','¸'],'Ä':['A','¨'],'Ö':['O','¨'],'ÿ':['y','¨']};
+
+function normSpec(p){
+  p = p || {}; var pl = p.plume || {}, m = p.metriques || {};
+  return {
+    nom: String(p.nom || 'Sans titre').slice(0, 40), categorie: String(p.categorie || '').slice(0, 40), description: String(p.description || '').slice(0, 240),
+    plume: {forme: FORMES.indexOf(pl.forme) >= 0 ? pl.forme : 'ronde', largeur: clamp(pl.largeur, 20, 220, 80), contraste: clamp(pl.contraste, 0, 0.9, 0.6), angle: clamp(pl.angle, 0, 90, 30)},
+    inclinaison: clamp(p.inclinaison, -15, 30, 0), espacement: clamp(p.espacement, -40, 160, 0), graisse: clamp(p.graisse, -40, 40, 0), source: p.source === 'image' ? 'image' : '',
+    donneur: (p.donneur && typeof p.donneur.id === 'string') ? {id: p.donneur.id, sx: clamp(p.donneur.sx, 0.4, 2.5, 1), d: clamp(p.donneur.d, -70, 130, 0), r: clamp(p.donneur.r, 0, 40, 0), xD: clamp(p.donneur.xD, 100, 1200, 500), aD: clamp(p.donneur.aD, 150, 1500, 700), xT: clamp(p.donneur.xT, 100, 1200, 500), aT: clamp(p.donneur.aT, 150, 1500, 700), xh: clamp(p.donneur.xh, 70, 130, 100), st: clamp(p.donneur.st, 0, 150, 100), sty: normStyle(p.donneur.sty)} : null,
+    metriques: {cap: clamp(m.cap, 450, 820, 700), x: clamp(m.x, 300, 620, 480), asc: clamp(m.asc, 600, 900, 750), desc: clamp(m.desc, -380, -100, -220)},
+    glyphes: (p.glyphes && typeof p.glyphes === 'object') ? p.glyphes : {}
+  };
+}
+function toClip(lines){ return lines.map(function(l){ return l.map(function(p){ return {X: Math.round(p[0] * S), Y: Math.round(p[1] * S)}; }); }).filter(function(l){ return l.length > 2; }); }
+function fromClip(sol){ return sol.filter(function(p){ return p.length > 2; }).map(function(p){ return p.map(function(q){ return [q.X / S, q.Y / S]; }); }); }
+/* closed contours, even-odd fill -> clean polygons, outers positive, holes negative */
+function evenOdd(lines){
+  var CL = ClipperLib, c = new CL.Clipper(), sol = new CL.Paths(), sub = toClip(lines);
+  if(!sub.length) return [];
+  c.AddPaths(sub, CL.PolyType.ptSubject, true);
+  c.Execute(CL.ClipType.ctUnion, sol, CL.PolyFillType.pftEvenOdd, CL.PolyFillType.pftEvenOdd);
+  return fromClip(sol);
+}
+function fatten(polys, d, miter){
+  var CL = ClipperLib, co = new CL.ClipperOffset(3, 2.5), sol = new CL.Paths();
+  co.AddPaths(toClip(polys), miter ? CL.JoinType.jtMiter : CL.JoinType.jtRound, CL.EndType.etClosedPolygon);
+  co.Execute(sol, d * S);
+  return fromClip(CL.Clipper.CleanPolygons(sol, 0.4 * S));
+}
+/* compile: spec.glyphes -> {char: {w, lines, polys}} with composed accents and space.
+   s = pen centerlines, c = closed contours as path strings, p = traced polygons */
+function compile(spec){
+  var g = {}, m = spec.metriques;
+  Object.keys(spec.glyphes).forEach(function(k){
+    var v = spec.glyphes[k]; k = ALIAS[k] || k;
+    if(Array.from(k).length !== 1 || !v) return;
+    var lines = [], polys = [];
+    if(Array.isArray(v.s)) v.s.forEach(function(d){ if(typeof d === 'string') lines = lines.concat(parsePath(d)); });
+    if(Array.isArray(v.c)){ var cl = []; v.c.forEach(function(d){ if(typeof d === 'string') cl = cl.concat(parsePath(d)); }); polys = evenOdd(cl); }
+    if(Array.isArray(v.p)) polys = evenOdd(v.p.filter(function(l){ return Array.isArray(l); }));
+    if(lines.length || polys.length) g[k] = {w: clamp(v.w, 80, 1500, 600), lines: lines, polys: polys};
+  });
+  Object.keys(COMPOSE).forEach(function(ch){
+    if(g[ch]) return;
+    var b = COMPOSE[ch][0], mk = g[COMPOSE[ch][1]];
+    if(b === 'ı' && !g[b]) b = 'i';
+    var base = g[b]; if(!base || !mk) return;
+    var dx = (base.w - mk.w) / 2, dy = (ch === ch.toUpperCase() && COMPOSE[ch][1] !== '¸') ? (m.cap - m.x) : 0;
+    var mv = function(l){ return l.map(function(p){ return [p[0] + dx, p[1] + dy]; }); };
+    g[ch] = {w: base.w, lines: base.lines.concat(mk.lines.map(mv)), polys: base.polys.concat(mk.polys.map(mv))};
+  });
+  g[' '] = {w: 270, lines: [], polys: []};
+  return g;
+}
+function glyphPolys(spec, comp, ch){
+  var gl = comp[ch]; if(!gl) return null;
+  var polys = gl.lines.length ? outline(gl.lines, spec.plume, spec.inclinaison) : [];
+  if(gl.polys.length){
+    var pp = (spec.graisse && !gl.donor) ? fatten(gl.polys, spec.graisse) : gl.polys, k = Math.tan((spec.inclinaison || 0) * Math.PI / 180);
+    polys = polys.concat(k ? pp.map(function(p){ return p.map(function(q){ return [q[0] + q[1] * k, q[1]]; }); }) : pp);
+  }
+  return {w: gl.w + spec.espacement, polys: polys};
+}
+function buildFont(spec, comp, family){
+  var m = spec.metriques, glyphs = [], np = new opentype.Path();
+  np.moveTo(80, 0); np.lineTo(80, m.cap); np.lineTo(420, m.cap); np.lineTo(420, 0); np.close();
+  np.moveTo(130, 50); np.lineTo(370, 50); np.lineTo(370, m.cap - 50); np.lineTo(130, m.cap - 50); np.close();
+  glyphs.push(new opentype.Glyph({name: '.notdef', unicode: 0, advanceWidth: 500, path: np}));
+  Object.keys(comp).sort(function(a, b){ return a.codePointAt(0) - b.codePointAt(0); }).forEach(function(ch){
+    var o = glyphPolys(spec, comp, ch), path = new opentype.Path(), cp = ch.codePointAt(0);
+    o.polys.forEach(function(poly){ poly.forEach(function(p, i){ if(i) path.lineTo(Math.round(p[0]), Math.round(p[1])); else path.moveTo(Math.round(p[0]), Math.round(p[1])); }); path.close(); });
+    glyphs.push(new opentype.Glyph({name: cp === 32 ? 'space' : 'uni' + ('0000' + cp.toString(16).toUpperCase()).slice(-4), unicode: cp, advanceWidth: Math.max(60, Math.round(o.w)), path: path}));
+  });
+  var top = Math.max(m.asc, m.cap + (m.asc - m.x) + 40);
+  return new opentype.Font({familyName: family, styleName: 'Regular', unitsPerEm: 1000, ascender: Math.round(top), descender: Math.round(m.desc), designer: 'VIEWZ Studio', glyphs: glyphs});
+}
+/* ---------- donor library: real fonts adapted by measurement ---------- */
+var LIBCHARS = (function(){ var s = ''; for(var i = 33; i < 127; i++) s += String.fromCharCode(i); return s + 'àâäçéèêëîïôöùûüÿœæÀÂÄÇÉÈÊËÎÏÔÖÙÛÜŒÆ«»’–…€°'; })();
+function unionNZ(lines){
+  var CL = ClipperLib, c = new CL.Clipper(), sol = new CL.Paths(), sub = toClip(lines);
+  if(!sub.length) return [];
+  c.AddPaths(sub, CL.PolyType.ptSubject, true);
+  c.Execute(CL.ClipType.ctUnion, sol, CL.PolyFillType.pftNonZero, CL.PolyFillType.pftNonZero);
+  return fromClip(sol);
+}
+function libGlyph(L, ch){
+  if(ch in L.cache) return L.cache[ch];
+  var f = L.font, g = f.charToGlyph(ch), out = null;
+  if(g && g.index > 0){
+    var k = 1000 / f.unitsPerEm, lines = [], cur = null, x = 0, y = 0, i, t, u;
+    ((g.path && g.path.commands) || []).forEach(function(c){
+      if(c.type === 'M'){ cur = [[c.x * k, c.y * k]]; lines.push(cur); }
+      else if(c.type === 'L' && cur) cur.push([c.x * k, c.y * k]);
+      else if(c.type === 'Q' && cur){ for(i = 1; i <= 8; i++){ t = i / 8; u = 1 - t; cur.push([(u*u*x + 2*u*t*c.x1 + t*t*c.x) * k, (u*u*y + 2*u*t*c.y1 + t*t*c.y) * k]); } }
+      else if(c.type === 'C' && cur){ for(i = 1; i <= 10; i++){ t = i / 10; u = 1 - t; cur.push([(u*u*u*x + 3*u*u*t*c.x1 + 3*u*t*t*c.x2 + t*t*t*c.x) * k, (u*u*u*y + 3*u*u*t*c.y1 + 3*u*t*t*c.y2 + t*t*t*c.y) * k]); } }
+      else if(c.type === 'Z') cur = null;
+      if(c.type !== 'Z'){ x = c.x; y = c.y; }
+    });
+    var polys = unionNZ(lines);
+    if(polys.length || ch === ' ') out = {w: (g.advanceWidth || 500) * k, polys: polys};
+  }
+  return (L.cache[ch] = out);
+}
+function pbox(polys){ var b = {x0: 1e9, y0: 1e9, x1: -1e9, y1: -1e9}; polys.forEach(function(p){ p.forEach(function(q){ if(q[0] < b.x0) b.x0 = q[0]; if(q[0] > b.x1) b.x1 = q[0]; if(q[1] < b.y0) b.y0 = q[1]; if(q[1] > b.y1) b.y1 = q[1]; }); }); return b; }
+function parea(polys){ var a = 0, per = 0; polys.forEach(function(p){ for(var i = 0; i < p.length; i++){ var q = p[(i + 1) % p.length]; a += p[i][0] * q[1] - q[0] * p[i][1]; per += Math.hypot(q[0] - p[i][0], q[1] - p[i][1]); } }); return {a: Math.abs(a / 2), p: per}; }
+function med(a){ a = a.filter(function(v){ return isFinite(v); }).sort(function(x, y){ return x - y; }); return a.length ? (a[(a.length - 1) >> 1] + a[a.length >> 1]) / 2 : NaN; }
+function topOf(get, chars){ return med(Array.from(chars).map(function(c){ var g = get(c); return g && g.polys.length ? pbox(g.polys).y1 : NaN; })); }
+var XL = 'xvwzuosnmreca', AL = 'bdfhklt', CL_ = 'HEIBDFLTNMUKPRAXZ';
+function warp(polys, P){ return polys.map(function(p){ return p.map(function(q){ return [q[0] * P.sx, q[1] <= P.xD ? q[1] * P.xT / P.xD : P.xT + (q[1] - P.xD) * (P.aT - P.xT) / (P.aD - P.xD)]; }); }); }
+/* one donor glyph adapted to parameters P */
+function adapt(L, ch, P){
+  var g = libGlyph(L, ch); if(!g) return null;
+  var polys = warp(g.polys, P);
+  if(P.d && polys.length) polys = fatten(polys, P.d, !P.r);
+  if(P.r > 0 && polys.length){ polys = fatten(fatten(fatten(polys, -P.r), 2 * P.r), -P.r); }
+  var w = Math.max(80, g.w * P.sx + 1.2 * P.d);
+  if(P.st > 0 && P.sty && polys.length){ polys = stylize(polys, P.sty, P.st / 100, ch.codePointAt(0), P.xT); w = Math.max(80, w + 2 * P.st / 100 * thHV(P.sty.th)[0]); }
+  return {w: w, polys: polys};
+}
+/* tcomp: compiled target glyphs (traced). Returns fitted parameters for donor L. */
+function fitDonor(L, tcomp){
+  var tg = function(c){ return tcomp[c]; }, lg = function(c){ return libGlyph(L, c); };
+  var lx = topOf(lg, 'x') || topOf(lg, XL), la = topOf(lg, 'l') || topOf(lg, AL), lc = topOf(lg, 'H') || topOf(lg, CL_);
+  if(!isFinite(lx)) lx = isFinite(lc) ? lc * 0.7 : 500; if(!isFinite(la)) la = isFinite(lc) ? lc : lx * 1.4; if(!(la > lx + 20)) la = lx + 20;
+  var tx = topOf(tg, XL), ta = topOf(tg, AL), tc = topOf(tg, CL_), s = 1, xT, aT;
+  if(isFinite(tx) && isFinite(ta) && ta > tx + 20){ xT = tx; aT = ta; }
+  else if(isFinite(tx)){ s = tx / lx; xT = tx; aT = la * s; }
+  else if(isFinite(ta)){ s = ta / la; xT = lx * s; aT = ta; }
+  else if(isFinite(tc) && isFinite(lc)){ s = tc / lc; xT = lx * s; aT = la * s; }
+  else { xT = lx; aT = la; }
+  aT = Math.max(aT, xT + 0.55 * (la - lx) * xT / lx);
+  var P = {sx: xT / lx, d: 0, r: 0, xD: lx, aD: la, xT: xT, aT: aT, xh: 100};
+  var keys = Object.keys(tcomp).filter(function(c){ return tcomp[c].polys.length && lg(c) && lg(c).polys.length; });
+  if(!keys.length) return P;
+  for(var it = 0; it < 3; it++){
+    P.d = clamp(med(keys.map(function(c){ var w = warp(lg(c).polys, P), cur = P.d ? fatten(w, P.d) : w, m = parea(cur), t = parea(tcomp[c].polys); return P.d + (t.a - m.a) / (m.p || 1); })), -70, 130, 0);
+    P.sx = clamp(med(keys.map(function(c){ var tb = pbox(tcomp[c].polys), lb = pbox(lg(c).polys); return (tb.x1 - tb.x0 - 2 * P.d) / ((lb.x1 - lb.x0) || 1); })), 0.55, 1.8, 1);
+  }
+  P.d = Math.round(P.d); P.sx = Math.round(P.sx * 100) / 100;
+  var loss = function(polys){ var a = parea(polys).a; return a ? 1 - parea(fatten(fatten(polys, -14), 14)).a / a : 0; };
+  var lt = med(keys.map(function(c){ return loss(tcomp[c].polys); })), bd = 1e9;
+  [0, 6, 12, 18, 24].forEach(function(r){ var Q = {sx: P.sx, d: P.d, r: r, xD: P.xD, aD: P.aD, xT: P.xT, aT: P.aT}; var ld = med(keys.map(function(c){ return loss(adapt(L, c, Q).polys); })); if(Math.abs(ld - lt) < bd - 0.002){ bd = Math.abs(ld - lt); P.r = r; } });
+  return P;
+}
+/* overlap score 0..1 between traced letters and a library font, letters normalised to the same height */
+function scoreLib(L, tcomp){
+  var CLp = ClipperLib, tot = 0, n = 0;
+  Object.keys(tcomp).forEach(function(c){
+    var t = tcomp[c], g = libGlyph(L, c); if(!t.polys.length || !g || !g.polys.length) return;
+    var nrm = function(polys){ var b = pbox(polys), k = 1000 / ((b.y1 - b.y0) || 1); return toClip(polys.map(function(p){ return p.map(function(q){ return [(q[0] - b.x0) * k, (q[1] - b.y0) * k]; }); })); };
+    var A = nrm(t.polys), B = nrm(g.polys), ar = function(type){ var cl = new CLp.Clipper(), sol = new CLp.Paths(), a = 0; cl.AddPaths(A, CLp.PolyType.ptSubject, true); cl.AddPaths(B, CLp.PolyType.ptClip, true); cl.Execute(type, sol, CLp.PolyFillType.pftNonZero, CLp.PolyFillType.pftNonZero); sol.forEach(function(p){ a += CLp.Clipper.Area(p); }); return Math.abs(a); };
+    var un = ar(CLp.ClipType.ctUnion); if(un > 0){ tot += ar(CLp.ClipType.ctIntersection) / un; n++; }
+  });
+  return n ? tot / n : 0;
+}
+/* ---------- letters derived by symmetry from a traced b, d, p or q ---------- */
+var SYM = {b: [0, 0], d: [1, 0], p: [0, 1], q: [1, 1]};
+function clipOp(A, B, type){
+  var CL = ClipperLib, c = new CL.Clipper(), sol = new CL.Paths();
+  c.AddPaths(toClip(A), CL.PolyType.ptSubject, true); c.AddPaths(toClip(B), CL.PolyType.ptClip, true);
+  c.Execute(type === 'diff' ? CL.ClipType.ctDifference : CL.ClipType.ctIntersection, sol, CL.PolyFillType.pftNonZero, CL.PolyFillType.pftNonZero);
+  return fromClip(sol);
+}
+function rectP(x0, y0, x1, y1){ return [[[x0, y0], [x1, y0], [x1, y1], [x0, y1]]]; }
+/* leftmost and rightmost crossings of the horizontal line y with the outline */
+function scanX(polys, y){
+  var lo = Infinity, hi = -Infinity;
+  polys.forEach(function(p){ for(var i = 0; i < p.length; i++){ var a = p[i], b = p[(i + 1) % p.length]; if((a[1] > y) !== (b[1] > y)){ var x = a[0] + (y - a[1]) * (b[0] - a[0]) / (b[1] - a[1]); if(x < lo) lo = x; if(x > hi) hi = x; } } });
+  return hi > lo ? [lo, hi] : null;
+}
+function flipP(polys, fx, fy, cx, cy){ return evenOdd(polys.map(function(p){ return p.map(function(q){ return [fx ? cx - q[0] : q[0], fy ? cy - q[1] : q[1]]; }); })); }
+function roundP(polys){ return polys.map(function(p){ return p.map(function(q){ return [Math.round(q[0]), Math.round(q[1])]; }); }); }
+/* glyphes: traced {ch: {w, p}}. xh: x-height. Returns the missing b d p q l, each {w, p, der: source letter}. */
+function deriveGlyphes(glyphes, xh){
+  var out = {}, has = function(c){ return glyphes[c] && Array.isArray(glyphes[c].p) && !glyphes[c].der; };
+  var src = ['b', 'd', 'p', 'q'].filter(has)[0];
+  if(!src) return out;
+  var g = glyphes[src], w = g.w, P0 = evenOdd(g.p); if(!P0.length) return out;
+  var b0 = pbox(P0), B = flipP(P0, SYM[src][0], SYM[src][1], w, b0.y0 + b0.y1), bb = pbox(B), H = bb.y1 - bb.y0;
+  var xr = clamp(xh, bb.y0 + 0.45 * H, bb.y0 + 0.85 * H, bb.y0 + 0.68 * H), sl = [], sr = [];
+  for(var i = 0; i < 9; i++){ var s = scanX(B, xr + (bb.y1 - xr) * (0.3 + 0.5 * i / 8)); if(s){ sl.push(s[0]); sr.push(s[1]); } }
+  var stemL = med(sl), stemR = med(sr);
+  if(!isFinite(stemR) || stemR - stemL < 8 || stemR - stemL > 0.8 * (bb.x1 - bb.x0)) stemR = NaN;
+  /* top of the bowl: highest point clearly to the right of the stem */
+  var bowlTop = -Infinity, lim = isFinite(stemR) ? stemR + 0.3 * (bb.x1 - stemR) : (bb.x0 + bb.x1) / 2;
+  B.forEach(function(p){ p.forEach(function(q){ if(q[0] > lim && q[1] > bowlTop) bowlTop = q[1]; }); });
+  if(!isFinite(bowlTop)) bowlTop = xr;
+  ['b', 'd', 'p', 'q'].forEach(function(t){
+    if(has(t)) return;
+    out[t] = {w: w, der: src, p: roundP(flipP(B, SYM[t][0], SYM[t][1], w, bb.y0 + bowlTop))};
+  });
+  if(!has('l') && isFinite(stemR)){
+    var big = 4000, stem = clipOp(B, rectP(-big, -big, stemR, big), 'int'), foot = scanX(stem, bb.y0 + 0.05 * H);
+    if(!foot || foot[1] - foot[0] < 0.85 * (stemR - stemL)){
+      /* the stem melts into the bowl at the baseline: rebuild the foot from the top terminal */
+      var mid = (bb.y0 + bb.y1) / 2, top = clipOp(stem, rectP(-big, mid - 1, big, big), 'int');
+      stem = unionNZ(top.concat(flipP(top, 0, 1, 0, bb.y0 + bb.y1)));
+    }
+    if(stem.length) out.l = {w: Math.round(stemR + Math.max(20, bb.x0)), der: src, p: roundP(stem)};
+  }
+  /* o: right half of the bowl, mirrored around the centre of the counter */
+  if(!has('o')){
+    var hole = null, ha = 0; B.forEach(function(p){ var a = 0; for(var i = 0; i < p.length; i++){ var q = p[(i + 1) % p.length]; a += p[i][0] * q[1] - q[0] * p[i][1]; } if(a < ha){ ha = a; hole = p; } });
+    if(hole){
+      var hb = pbox([hole]), xc = (hb.x0 + hb.x1) / 2, half = clipOp(B, rectP(xc - 1, -4000, 4000, bowlTop + 0.04 * H), 'int'), sd = Math.max(20, bb.x0), dxo = sd - (2 * xc - bb.x1);
+      var oo = unionNZ(half.concat(flipP(half, 1, 0, 2 * xc, 0))).map(function(p){ return p.map(function(q){ return [q[0] + dxo, q[1]]; }); });
+      if(oo.length) out.o = {w: Math.round(2 * (bb.x1 - xc) + 2 * sd), der: src, p: roundP(oo)};
+    }
+  }
+  return out;
+}
+/* all crossings of the horizontal line y, sorted */
+function scanAll(polys, y){ var xs = []; polys.forEach(function(p){ for(var i = 0; i < p.length; i++){ var a = p[i], b = p[(i + 1) % p.length]; if((a[1] > y) !== (b[1] > y)) xs.push(a[0] + (y - a[1]) * (b[0] - a[0]) / (b[1] - a[1])); } }); return xs.sort(function(a, b){ return a - b; }); }
+function shiftP(polys, dx, dy){ return polys.map(function(p){ return p.map(function(q){ return [q[0] + dx, q[1] + (dy || 0)]; }); }); }
+/* second pass: letters assembled from parts of the traced or derived ones. G: traced + first-pass glyphs. dot: optional {polys, stem: bbox} taken from the donor's i. */
+function assembleGlyphes(G, xh, dot){
+  var out = {}, get = function(c){ var g = out[c] || G[c]; return (g && Array.isArray(g.p)) ? g : null; }, own = function(c){ return G[c] && Array.isArray(G[c].p) && !G[c].der; };
+  var put = function(c, w, polys, src){ if(!own(c) && !out[c] && polys.length) out[c] = {w: Math.round(w), der: src, p: roundP(polys)}; };
+  /* the two stems of an n-like letter, measured at mid-height */
+  var stems = function(P, f0, f1){ var b = pbox(P), a = [[], [], [], []]; for(var i = 0; i < 7; i++){ var xs = scanAll(P, b.y0 + (b.y1 - b.y0) * (f0 + (f1 - f0) * i / 6)); if(xs.length === 4) xs.forEach(function(x, k){ a[k].push(x); }); } return a[0].length >= 3 ? a.map(med) : null; };
+  if(get('u') && !get('n')){ var U = evenOdd(get('u').p), ub = pbox(U); put('n', get('u').w, flipP(U, 1, 1, get('u').w, ub.y0 + ub.y1), 'u'); }
+  var n = get('n');
+  if(n){
+    var N = evenOdd(n.p), nb = pbox(N), s = stems(N, 0.15, 0.5);
+    put('u', n.w, flipP(N, 1, 1, n.w, nb.y0 + nb.y1), 'n');
+    if(s){
+      put('m', n.w + s[2] - s[0], unionNZ(N.concat(shiftP(N, s[2] - s[0]))), 'n');
+      var cut = s[1] + 0.6 * (s[2] - s[1]);
+      put('r', cut + 0.5 * nb.x0, clipOp(N, rectP(-4000, -4000, cut, 4000), 'int'), 'n');
+      var l = get('l');
+      if(l){ var Lp = evenOdd(l.p), lx = scanX(Lp, (pbox(Lp).y0 + pbox(Lp).y1) / 2); if(lx) put('h', n.w, unionNZ(N.concat(shiftP(Lp, s[0] - lx[0]))), 'n'); }
+    }
+  }
+  var v = get('v');
+  if(v){ var V = evenOdd(v.p), vb = pbox(V), vx = scanAll(V, vb.y0 + 0.85 * (vb.y1 - vb.y0)); if(vx.length === 4) put('w', v.w + vx[2] - vx[0], unionNZ(V.concat(shiftP(V, vx[2] - vx[0]))), 'v'); }
+  var li = get('l');
+  if(li && !get('i')){
+    var Li = evenOdd(li.p), lb = pbox(Li), drop = lb.y1 - xh, sw = lb.x1 - lb.x0, cap = Math.max(50, 0.6 * sw);
+    if(drop > 30 && xh - 2 * cap > lb.y0){
+      var body = unionNZ(clipOp(Li, rectP(-4000, -4000, 4000, xh - cap), 'int').concat(shiftP(clipOp(Li, rectP(-4000, lb.y1 - cap - 1, 4000, 4000), 'int'), 0, -drop))), sb = pbox(body), dp;
+      if(dot && dot.polys.length){ var k = clamp(sw / ((dot.stem.x1 - dot.stem.x0) || 1), 0.5, 2, 1), dcx = (dot.stem.x0 + dot.stem.x1) / 2, scx = (sb.x0 + sb.x1) / 2; dp = dot.polys.map(function(p){ return p.map(function(q){ return [(q[0] - dcx) * k + scx, sb.y1 + (q[1] - dot.stem.y1) * k]; }); }); }
+      else { dp = [[]]; for(var t = 0; t < 24; t++) dp[0].push([(sb.x0 + sb.x1) / 2 + sw / 2 * Math.cos(t * Math.PI / 12), sb.y1 + 0.85 * sw + sw / 2 * Math.sin(t * Math.PI / 12)]); }
+      put('i', li.w, body.concat(dp), li.der || 'l');
+    }
+  }
+  return out;
+}
+/* which lowercase letters end up in the user's hand, given the traced ones (same rules as the two passes above) */
+function coverage(chars){
+  var S = {}; Array.from(chars).forEach(function(c){ S[c] = 1; });
+  if(S.b || S.d || S.p || S.q) ['b', 'd', 'p', 'q', 'l', 'o'].forEach(function(c){ S[c] = 1; });
+  if(S.u) S.n = 1;
+  if(S.n){ S.u = S.m = S.r = 1; if(S.l) S.h = 1; }
+  if(S.v) S.w = 1;
+  if(S.l) S.i = 1;
+  return 'abcdefghijklmnopqrstuvwxyz'.split('').filter(function(c){ return S[c]; });
+}
+/* height of the bowl of a traced b or d (baseline at 0); a p or q gives it directly */
+function bowlTopOf(g, ch){
+  var P0 = evenOdd(g.p); if(!P0.length) return NaN;
+  var bb = pbox(P0); if(SYM[ch][1]) return bb.y1;
+  var B = SYM[ch][0] ? flipP(P0, 1, 0, g.w, 0) : P0, H = bb.y1 - bb.y0, xr = bb.y0 + 0.68 * H, sr = [];
+  bb = pbox(B);
+  for(var i = 0; i < 9; i++){ var s = scanX(B, xr + (bb.y1 - xr) * (0.3 + 0.5 * i / 8)); if(s) sr.push(s[1]); }
+  var stemR = med(sr), top = -Infinity; if(!isFinite(stemR)) return NaN;
+  var lim = stemR + 0.3 * (bb.x1 - stemR);
+  B.forEach(function(p){ p.forEach(function(q){ if(q[0] > lim && q[1] > top) top = q[1]; }); });
+  return (isFinite(top) && top < bb.y0 + 0.9 * H) ? top : NaN;
+}
+/* letters cropped at different zooms: bring the x-height letters to the height of the bowls of b d p q. Returns the factor applied. */
+function harmonize(glyphes, side){
+  var bt = [], xt = [], xs = [];
+  Object.keys(glyphes).forEach(function(c){ var g = glyphes[c]; if(!g || !Array.isArray(g.p)) return; if(SYM[c]) bt.push(bowlTopOf(g, c)); else if(XL.indexOf(c) >= 0){ xt.push(pbox(g.p).y1); xs.push(c); } });
+  var r = med(bt) / med(xt);
+  if(!isFinite(r) || Math.abs(r - 1) < 0.06 || r < 0.6 || r > 1.6) return 1;
+  xs.forEach(function(c){ var g = glyphes[c]; glyphes[c] = {w: Math.round((g.w - 2 * side) * r + 2 * side), p: g.p.map(function(l){ return l.map(function(q){ return [Math.round(side + (q[0] - side) * r), Math.round(q[1] * r)]; }); })}; });
+  return r;
+}
+/* accented letter = the user's own base letter + the donor's accent, cut out of the donor's accented glyph */
+function hybridAccent(L, P, own, graisse, ch){
+  var cz = COMPOSE[ch]; if(!cz || !own || own.donor || own.lines.length || !own.polys.length) return null;
+  var isI = cz[0] === 'ı', bch = isI ? 'i' : cz[0], P0 = P.st ? {sx: P.sx, d: P.d, r: P.r, xD: P.xD, aD: P.aD, xT: P.xT, aT: P.aT} : P, dc = adapt(L, ch, P0), db = adapt(L, (isI && libGlyph(L, 'ı')) ? 'ı' : bch, P0);
+  if(!dc || !db || !dc.polys.length || !db.polys.length) return null;
+  var body = function(polys){ if(!isI) return polys; var k = polys.filter(function(p){ return pbox([p]).y0 < P.xT * 0.5; }); return k.length ? k : polys; };
+  var dbase = body(db.polys), ubase = body(graisse ? fatten(own.polys, graisse) : own.polys);
+  var mark = clipOp(dc.polys, fatten(dbase, 5), 'diff').filter(function(p){ return parea([p]).a > 250; });
+  if(!mark.length) return null;
+  var ub = pbox(ubase), dbb = pbox(dbase), below = cz[1] === '¸';
+  var dx = (ub.x0 + ub.x1) / 2 - (dbb.x0 + dbb.x1) / 2, dy = below ? ub.y0 - dbb.y0 : ub.y1 - dbb.y1;
+  if(below) mark = fatten(mark, 6);
+  return {w: own.w, lines: [], polys: unionNZ(ubase.concat(mark.map(function(p){ return p.map(function(q){ return [q[0] + dx, q[1] + dy]; }); }))), donor: true};
+}
+/* ---------- coarse signature: 16 x 12 one-bit picture of a letter, for a fast first ranking of the whole library ---------- */
+var SIGC = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', SIGW = 16, SIGH = 12, SIGB = SIGW * SIGH / 8;
+function sigBits(polys){
+  var b = pbox(polys), cell = (b.y1 - b.y0) / SIGH, out = new Uint8Array(SIGB);
+  if(!(cell > 0)) return out;
+  for(var r = 0; r < SIGH; r++){
+    var y = b.y1 - (r + 0.5) * cell, xs = [];
+    polys.forEach(function(p){ for(var i = 0; i < p.length; i++){ var a = p[i], q = p[(i + 1) % p.length]; if((a[1] > y) !== (q[1] > y)) xs.push(a[0] + (y - a[1]) * (q[0] - a[0]) / (q[1] - a[1])); } });
+    for(var c = 0; c < SIGW; c++){ var x = b.x0 + (c + 0.5) * cell, n = 0; for(var j = 0; j < xs.length; j++) if(xs[j] < x) n++; if(n & 1) out[r * 2 + (c >> 3)] |= 1 << (c & 7); }
+  }
+  return out;
+}
+var POP = (function(){ var t = new Uint8Array(256); for(var i = 1; i < 256; i++) t[i] = t[i >> 1] + (i & 1); return t; })();
+/* bits: all fonts x SIGC letters x SIGB bytes. Returns font indexes, closest first. */
+function coarseRank(bits, nFonts, tcomp){
+  var keys = Object.keys(tcomp).filter(function(c){ return SIGC.indexOf(c) >= 0 && tcomp[c].polys.length; }), sg = keys.map(function(c){ return sigBits(tcomp[c].polys); }), ci = keys.map(function(c){ return SIGC.indexOf(c); }), res = [];
+  if(!keys.length) return null;
+  for(var f = 0; f < nFonts; f++){
+    var tot = 0;
+    for(var k = 0; k < keys.length; k++){ var o = (f * SIGC.length + ci[k]) * SIGB, a = sg[k], inter = 0, uni = 0; for(var i = 0; i < SIGB; i++){ var v = bits[o + i]; inter += POP[a[i] & v]; uni += POP[a[i] | v]; } tot += uni ? inter / uni : 0; }
+    res.push([f, tot / keys.length]);
+  }
+  return res.sort(function(x, y){ return y[1] - x[1]; });
+}
+/* ---------- style of the traced letters carried over to the donor: measured on the shared letters, then applied to every donor glyph ---------- */
+function densify(p, step){ var o = []; for(var i = 0; i < p.length; i++){ var a = p[i], b = p[(i + 1) % p.length], n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / step)); for(var j = 0; j < n; j++) o.push([a[0] + (b[0] - a[0]) * j / n, a[1] + (b[1] - a[1]) * j / n]); } return o; }
+/* unit normals pointing away from the ink (outlines come from a union: outer loops one way, holes the other) */
+function normalsOf(p){ var n = p.length, o = new Array(n); for(var i = 0; i < n; i++){ var a = p[(i + n - 1) % n], b = p[(i + 1) % n], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1; o[i] = [dy / l, -dx / l]; } return o; }
+function unionPos(lines){
+  var CL = ClipperLib, c = new CL.Clipper(), sol = new CL.Paths(), sub = toClip(lines);
+  if(!sub.length) return [];
+  c.AddPaths(sub, CL.PolyType.ptSubject, true);
+  c.Execute(CL.ClipType.ctUnion, sol, CL.PolyFillType.pftPositive, CL.PolyFillType.pftPositive);
+  return fromClip(sol);
+}
+/* stroke thickness seen from each outline point: [direction of the normal, distance through the ink] */
+function thickSamples(polys){
+  var E = [], out = [];
+  polys.forEach(function(p){ for(var i = 0; i < p.length; i++) E.push([p[i], p[(i + 1) % p.length]]); });
+  polys.forEach(function(p){
+    var d = densify(p, 22), N = normalsOf(d);
+    for(var i = 0; i < d.length; i++){
+      var rx = -N[i][0], ry = -N[i][1], ox = d[i][0] + rx * 1.5, oy = d[i][1] + ry * 1.5, best = Infinity;
+      for(var e = 0; e < E.length; e++){
+        var a = E[e][0], b = E[e][1], ex = b[0] - a[0], ey = b[1] - a[1], den = rx * ey - ry * ex; if(Math.abs(den) < 1e-9) continue;
+        var t = ((a[0] - ox) * ey - (a[1] - oy) * ex) / den, s = ((a[0] - ox) * ry - (a[1] - oy) * rx) / den;
+        if(t > 0 && s >= 0 && s <= 1 && t < best) best = t;
+      }
+      if(best < Infinity) out.push([Math.atan2(N[i][1], N[i][0]), best + 1.5]);
+    }
+  });
+  return out;
+}
+var STB = 8;
+function thickProfile(S){
+  var all = med(S.map(function(s){ return s[1]; })), bins = []; for(var b = 0; b < STB; b++) bins.push([]);
+  S.forEach(function(s){ if(s[1] > 1.7 * all) return; var a = s[0] % Math.PI; if(a < 0) a += Math.PI; bins[Math.round(a / Math.PI * STB) % STB].push(s[1]); });
+  return bins.map(function(b){ return b.length >= 5 ? med(b) : NaN; });
+}
+/* fine irregularity of the outline: typical distance between the outline and a short moving average of itself */
+function roughness(polys){
+  var v = [];
+  polys.forEach(function(p){
+    var d = densify(p, 10), m = d.length, W = 4, dv = new Array(m), i, j; if(m < 30) return; var N = normalsOf(d);
+    for(i = 0; i < m; i++){ var sx = 0, sy = 0; for(j = -W; j <= W; j++){ var q = d[(i + j + m) % m]; sx += q[0]; sy += q[1]; } dv[i] = (d[i][0] - sx / (2 * W + 1)) * N[i][0] + (d[i][1] - sy / (2 * W + 1)) * N[i][1]; }
+    /* the slow part of that distance is the curvature of the letter itself: remove it, keep the ripple */
+    for(i = 0; i < m; i++){ var s = 0; for(j = -W; j <= W; j++) s += dv[(i + j + m) % m]; var r = dv[i] - s / (2 * W + 1); v.push(r * r); }
+  });
+  if(!v.length) return 0;
+  v.sort(function(a, b){ return a - b; }); var n = Math.max(1, Math.floor(v.length * 0.9)), t = 0; for(var k = 0; k < n; k++) t += v[k];
+  return Math.sqrt(t / n);
+}
+/* lean of the stems: horizontal drift of the stem edge per unit of height */
+function leanOf(polys, ch){
+  if('bhklpnmrui'.indexOf(ch) < 0 && 'dq'.indexOf(ch) < 0) return NaN;
+  var b = pbox(polys), H = b.y1 - b.y0, k = 'dq'.indexOf(ch) >= 0 ? 1 : 0, lo = 0.3, hi = 0.7;
+  if('bhkl'.indexOf(ch) >= 0 || ch === 'd'){ lo = 0.55; hi = 0.9; } else if(ch === 'p' || ch === 'q'){ lo = 0.1; hi = 0.4; }
+  var a = scanX(polys, b.y0 + lo * H), c = scanX(polys, b.y0 + hi * H);
+  return (a && c) ? (c[k] - a[k]) / ((hi - lo) * H) : NaN;
+}
+var FU = 4, FV = 6, FV0 = -0.5, FV1 = 1.7;
+function fieldCell(u, v){ var fu = clamp(u, 0, 1, 0.5) * (FU - 1), fv = clamp((v - FV0) / (FV1 - FV0), 0, 1, 0.5) * (FV - 1), iu = Math.min(FU - 2, Math.floor(fu)), iv = Math.min(FV - 2, Math.floor(fv)); return [iu, iv, fu - iu, fv - iv]; }
+function fieldAt(f, u, v){
+  var c = fieldCell(u, v), o = [0, 0];
+  [[0, 0, (1 - c[2]) * (1 - c[3])], [1, 0, c[2] * (1 - c[3])], [0, 1, (1 - c[2]) * c[3]], [1, 1, c[2] * c[3]]].forEach(function(w){ var i = 2 * ((c[1] + w[1]) * FU + c[0] + w[0]); o[0] += w[2] * f[i]; o[1] += w[2] * f[i + 1]; });
+  return o;
+}
+/* smooth displacement that brings the donor's shared letters onto the traced ones, as a function of the position inside the letter */
+function fieldOf(pairs, xT){
+  var n = FU * FV, sx = new Float64Array(n), sy = new Float64Array(n), sw = new Float64Array(n), lim = 0.06 * xT * xT;
+  pairs.forEach(function(pr){
+    var tb = pbox(pr.t), db = pbox(pr.d), dw = (db.x1 - db.x0) || 1, kx = (tb.x1 - tb.x0) / dw, ky = (tb.y1 - tb.y0) / ((db.y1 - db.y0) || 1), T = [];
+    pr.t.forEach(function(p){ densify(p, 8).forEach(function(q){ T.push(q); }); });
+    pr.d.forEach(function(p){ densify(p, 18).forEach(function(q){
+      var ax = tb.x0 + (q[0] - db.x0) * kx, ay = tb.y0 + (q[1] - db.y0) * ky, bd = Infinity, bq = null;
+      for(var i = 0; i < T.length; i++){ var dx = T[i][0] - ax, dy = T[i][1] - ay, dd = dx * dx + dy * dy; if(dd < bd){ bd = dd; bq = T[i]; } }
+      if(!bq || bd > lim) return;
+      var c = fieldCell((q[0] - db.x0) / dw, q[1] / xT);
+      [[0, 0, (1 - c[2]) * (1 - c[3])], [1, 0, c[2] * (1 - c[3])], [0, 1, (1 - c[2]) * c[3]], [1, 1, c[2] * c[3]]].forEach(function(w){ var i = (c[1] + w[1]) * FU + c[0] + w[0]; sx[i] += w[2] * (bq[0] - ax); sy[i] += w[2] * (bq[1] - ay); sw[i] += w[2]; });
+    }); });
+  });
+  var f = [], mx = 0.1 * xT, any = false;
+  for(var i = 0; i < n; i++){ var a = Math.round(clamp(sx[i] / (sw[i] + 5), -mx, mx, 0)), b = Math.round(clamp(sy[i] / (sw[i] + 5), -mx, mx, 0)); f.push(a, b); if(a || b) any = true; }
+  return any ? f : null;
+}
+/* th: thickness change by direction of the normal (8 steps over a half turn). Returns [vertical strokes, horizontal strokes]. */
+function thHV(th){ return [(th[7] + 2 * th[0] + th[1]) / 4, (th[3] + 2 * th[4] + th[5]) / 4]; }
+function fattenXY(polys, dh, dv){
+  var K = 6, sc = function(P, kx, ky){ return P.map(function(p){ return p.map(function(q){ return [q[0] * kx, q[1] * ky]; }); }); };
+  if(Math.abs(dh) >= 1) polys = sc(fatten(sc(polys, 1, K), dh), 1, 1 / K);
+  if(Math.abs(dv) >= 1 && polys.length) polys = sc(fatten(sc(polys, K, 1), dv), 1 / K, 1);
+  return polys;
+}
+function stPhase(n){ var x = Math.sin(n * 12.9898) * 43758.5453; return (x - Math.floor(x)) * 6.2832; }
+/* Y: measured style {th, sl, wa, f}. k: strength (1 = as measured). Each part can be switched off through on = {th, sl, wa, f}. */
+function stylize(polys, Y, k, seed, xT, on){
+  if(!polys.length || !Y || !(k > 0)) return polys;
+  on = on || {th: 1, sl: 1, wa: 1, f: 1};
+  var src = polys;
+  /* thickness: vertical strokes and horizontal strokes are thickened or thinned separately, by a true outline offset */
+  if(on.th){ var hv = thHV(Y.th); polys = fattenXY(polys, k * hv[0], k * hv[1]); if(!polys.length) return src; }
+  var b = pbox(polys), bw = (b.x1 - b.x0) || 1, useF = on.f && Y.f && (b.y1 - b.y0) > 0.45 * xT, sl = on.sl ? Y.sl : 0, out = [];
+  if(!useF && !(on.wa && Y.wa)) out = sl ? polys.map(function(p){ return p.map(function(q){ return [q[0] + k * sl * q[1], q[1]]; }); }) : polys;
+  else polys.forEach(function(p, pi){
+    var d = densify(p, 14), m = d.length, N = normalsOf(d), per = parea([p]).p;
+    var n1 = Math.max(1, Math.round(per / 95)), n2 = Math.max(2, Math.round(per / 52)), p1 = stPhase(seed * 7.13 + pi * 3.1 + 1), p2 = stPhase(seed * 3.77 + pi * 5.3 + 2), wa = (on.wa && Y.wa && m >= 12) ? Y.wa / 0.608 : 0;
+    out.push(d.map(function(pt, i){
+      var off = 0, x, y;
+      if(wa) off += wa * (0.7 * Math.sin(6.2832 * n1 * i / m + p1) + 0.5 * Math.sin(6.2832 * n2 * i / m + p2));
+      x = pt[0] + k * off * N[i][0]; y = pt[1] + k * off * N[i][1];
+      if(useF){ var F = fieldAt(Y.f, (pt[0] - b.x0) / bw, pt[1] / xT); x += k * F[0]; y += k * F[1]; }
+      return [x + k * sl * y, y];
+    }));
+  });
+  var res = unionPos(out), holes = function(P){ return P.filter(function(p){ var a = 0; for(var i = 0; i < p.length; i++){ var q = p[(i + 1) % p.length]; a += p[i][0] * q[1] - q[0] * p[i][1]; } return a < 0; }).length; };
+  if(!res.length) return src;
+  /* a counter closed up or a stroke broke: retry at half strength */
+  if((holes(res) < holes(src) || res.length > src.length) && k > 0.12) return stylize(src, Y, k / 2, seed, xT, on);
+  return res;
+}
+/* overlap 0..1 of two letters set on the same baseline, left edges aligned */
+function iouP(A, B){
+  var CL = ClipperLib, dx = pbox(B).x0 - pbox(A).x0, a = toClip(shiftP(A, dx)), b = toClip(B), ar = function(type){ var c = new CL.Clipper(), sol = new CL.Paths(), t = 0; c.AddPaths(a, CL.PolyType.ptSubject, true); c.AddPaths(b, CL.PolyType.ptClip, true); c.Execute(type, sol, CL.PolyFillType.pftNonZero, CL.PolyFillType.pftNonZero); sol.forEach(function(p){ t += CL.Clipper.Area(p); }); return Math.abs(t); };
+  var u = ar(CL.ClipType.ctUnion); return u > 0 ? ar(CL.ClipType.ctIntersection) / u : 0;
+}
+/* tcomp: traced letters. P: fitted donor parameters. Returns the style to add on top of them. */
+function measureStyle(L, tcomp, P){
+  var Q = {sx: P.sx, d: P.d, r: P.r, xD: P.xD, aD: P.aD, xT: P.xT, aT: P.aT}, Y = {th: [0, 0, 0, 0, 0, 0, 0, 0], sl: 0, wa: 0, f: null};
+  var keys = Object.keys(tcomp).filter(function(c){ return tcomp[c].polys.length && libGlyph(L, c) && libGlyph(L, c).polys.length; });
+  if(!keys.length) return Y;
+  var T = {}, D = {}, st = [], sd = [], lt = [], ld = [];
+  keys.forEach(function(c){ T[c] = unionNZ(tcomp[c].polys); D[c] = adapt(L, c, Q).polys; st = st.concat(thickSamples(T[c])); sd = sd.concat(thickSamples(D[c])); var a = leanOf(T[c], c), b = leanOf(D[c], c); if(isFinite(a) && isFinite(b)){ lt.push(a); ld.push(b); } });
+  var pt = thickProfile(st), pd = thickProfile(sd), dl = pt.map(function(v, i){ return (v - pd[i]) / 2; }), ok = dl.filter(function(v){ return isFinite(v); }), mean = ok.length ? ok.reduce(function(a, b){ return a + b; }, 0) / ok.length : 0;
+  /* each part is kept at the dose (0, half, full) that brings the donor's shared letters closest to the traced ones */
+  var fitOf = function(Z, on){ return med(keys.map(function(c){ return iouP(stylize(D[c], Z, 1, 0, P.xT, on), T[c]); })); }, base = med(keys.map(function(c){ return iouP(D[c], T[c]); }));
+  var dose = function(make, on){ var best = null, bs = base + 0.002; [1, 0.5].forEach(function(s){ var Z = make(s), v = fitOf(Z, on); if(v > bs){ bs = v; best = Z; } }); if(best) base = bs; return best; };
+  var th0 = dl.map(function(v){ return clamp(v, -30, 30, mean); }), zt = dose(function(s){ return {th: th0.map(function(v){ return Math.round(v * s); }), sl: 0, wa: 0, f: null}; }, {th: 1});
+  if(zt) Y.th = zt.th;
+  /* one stem alone may just be a quirk of that letter or of the photo: the lean is carried over only when two letters agree */
+  var sl = lt.length >= 2 ? med(lt) - med(ld) : 0; sl = Math.abs(sl) > 0.03 ? Math.round(clamp(sl, -0.35, 0.35, 0) * 1000) / 1000 : 0;
+  if(sl){ var zs = dose(function(s){ return {th: Y.th, sl: Math.round(sl * s * 1000) / 1000, wa: 0, f: null}; }, {th: 1, sl: 1}); if(zs) Y.sl = zs.sl; }
+  var rt = med(keys.map(function(c){ return roughness(T[c]); })), rd = med(keys.map(function(c){ return roughness(D[c]); })), wa = rt - rd;
+  if(wa > 0.4){
+    /* calibrate: the amplitude kept is the one that gives the donor's letters the same measured irregularity as the traced ones */
+    for(var it = 0; it < 6; it++){ var got = med(keys.map(function(c){ return roughness(stylize(D[c], {th: Y.th, sl: 0, wa: wa, f: null}, 1, c.charCodeAt(0), P.xT, {wa: 1})); })) - rd; if(!(got > 0.05)) break; wa = Math.min(12, wa * (rt - rd) / got); }
+    Y.wa = Math.round(Math.min(12, wa) * 10) / 10;
+  }
+  var f0 = fieldOf(keys.map(function(c){ return {t: T[c], d: stylize(D[c], Y, 1, 0, P.xT, {th: 1, sl: 1})}; }), P.xT);
+  if(f0){ var zf = dose(function(s){ return {th: Y.th, sl: Y.sl, wa: 0, f: f0.map(function(v){ return Math.round(v * s); })}; }, {th: 1, sl: 1, f: 1}); if(zf) Y.f = zf.f; }
+  Y.gain = [Math.round(1000 * med(keys.map(function(c){ return iouP(D[c], T[c]); }))) / 10, Math.round(base * 1000) / 10];
+  return Y;
+}
+function normStyle(y){
+  if(!y || !Array.isArray(y.th) || y.th.length !== STB) return null;
+  var f = (Array.isArray(y.f) && y.f.length === 2 * FU * FV) ? y.f.map(function(v){ return clamp(v, -120, 120, 0); }) : null;
+  return {th: y.th.map(function(v){ return clamp(v, -45, 45, 0); }), sl: clamp(y.sl, -0.35, 0.35, 0), wa: clamp(y.wa, 0, 12, 0), f: f, gain: Array.isArray(y.gain) ? y.gain.slice(0, 2).map(function(v){ return clamp(v, 0, 100, 0); }) : null};
+}
+/*GEOM-END*/
+
+/* ---------- helpers ---------- */
+var $ = function(id){ return document.getElementById(id); };
+function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+var cache = {};
+function sig(spec){ var p = spec.plume; return [spec._id, p.forme, p.largeur, p.contraste, p.angle, spec.inclinaison, spec.espacement, spec.graisse, spec.donneur ? JSON.stringify(spec.donneur) : ''].join('|'); }
+function getComp(spec){ if(!spec._comp) spec._comp = compile(spec); return spec._comp; }
+/* library: lib/index.js holds names and coarse signatures of every font; the fonts themselves sit in chunks loaded on demand */
+var LIBMAP = {}, IDX = null, IDXPOS = {}, libP = null, CHUNKP = {}, RAW = {}, FINE = 24;
+function loadScript(src){ return new Promise(function(res, rej){ var sc = document.createElement('script'); sc.src = src; sc.onload = function(){ res(); }; sc.onerror = function(){ rej(new Error('lib')); }; document.head.appendChild(sc); }); }
+function b64bytes(s){ var bin = atob(s), u = new Uint8Array(bin.length); for(var j = 0; j < bin.length; j++) u[j] = bin.charCodeAt(j); return u; }
+window.VT_CHUNK = function(n, o){ Object.keys(o).forEach(function(id){ RAW[id] = o[id]; }); };
+function loadLib(){
+  if(libP) return libP;
+  libP = loadScript('lib/index.js').then(function(){
+    var x = window.VT_IDX; if(!x || !x.fonts) throw new Error('lib');
+    IDX = {fonts: x.fonts, per: x.per, bits: b64bytes(x.bits)}; x.bits = null;
+    IDX.fonts.forEach(function(f, i){ IDXPOS[f[0]] = i; });
+    return IDX;
+  });
+  libP.catch(function(){ libP = null; });
+  return libP;
+}
+/* make sure these fonts are loaded and parsed */
+function ensureFonts(ids){
+  return loadLib().then(function(){
+    var need = {}; ids.forEach(function(id){ if(!LIBMAP[id] && id in IDXPOS) need[Math.floor(IDXPOS[id] / IDX.per)] = 1; });
+    return Promise.all(Object.keys(need).map(function(n){
+      if(!CHUNKP[n]){ CHUNKP[n] = loadScript('lib/c' + ('000' + n).slice(-4) + '.js'); CHUNKP[n].catch(function(){ delete CHUNKP[n]; }); }
+      return CHUNKP[n];
+    }));
+  }).then(function(){
+    ids.forEach(function(id){
+      if(LIBMAP[id] || !RAW[id]) return;
+      var f = IDX.fonts[IDXPOS[id]];
+      try { LIBMAP[id] = {id: id, nom: f[1], graisse: f[2], cat: f[3], font: opentype.parse(b64bytes(RAW[id]).buffer), cache: {}}; } catch(err){}
+      RAW[id] = null;
+    });
+  });
+}
+function donorP(spec){ var D = spec.donneur, xT = Math.min(D.xT * D.xh / 100, D.aT - 20); return {sx: D.sx, d: D.d, r: D.r, xD: D.xD, aD: D.aD, xT: xT, aT: D.aT, st: D.st, sty: D.sty}; }
+function gp(spec, ch){
+  var k = sig(spec) + '|' + ch;
+  if(!(k in cache)){
+    var comp = getComp(spec);
+    if(!comp[ch] && spec.donneur && LIBMAP[spec.donneur.id] && COMPOSE[ch]){ var bk = COMPOSE[ch][0] === 'ı' ? 'i' : COMPOSE[ch][0], hy = hybridAccent(LIBMAP[spec.donneur.id], donorP(spec), comp[bk], spec.graisse, ch); if(hy) comp[ch] = hy; }
+    if(!comp[ch] && spec.donneur && LIBMAP[spec.donneur.id]){ var a = adapt(LIBMAP[spec.donneur.id], ch, donorP(spec)); if(a) comp[ch] = {w: a.w, lines: [], polys: a.polys, donor: true}; }
+    cache[k] = glyphPolys(spec, comp, ch);
+  }
+  return cache[k];
+}
+function fillDonor(spec){ if(spec.donneur && LIBMAP[spec.donneur.id]) Array.from(LIBCHARS).forEach(function(c){ gp(spec, c); }); }
+var uid = 0;
+function prep(p){ var s = normSpec(p); s._id = ++uid; return s; }
+
+/* Render a line of text as inline SVG. size = px per em. */
+function textSVG(spec, text, size, guides){
+  var m = spec.metriques, top = Math.max(m.asc, m.cap + 230), bot = m.desc - 30, x = 0, d = '';
+  Array.from(text).forEach(function(ch){
+    var o = gp(spec, ch);
+    if(!o){ x += 300; return; }
+    o.polys.forEach(function(poly){ d += 'M' + poly.map(function(p){ return (p[0] + x).toFixed(1) + ' ' + (-p[1]).toFixed(1); }).join('L') + 'Z'; });
+    x += o.w;
+  });
+  var W = Math.max(x, 60), H = top - bot, g = '';
+  if(guides){
+    [['base', 0], ['x', m.x], ['cap', m.cap]].forEach(function(q){ g += '<line class="g" x1="0" x2="' + W + '" y1="' + (-q[1]) + '" y2="' + (-q[1]) + '"/>'; });
+  }
+  return '<svg class="t" viewBox="0 ' + (-top) + ' ' + W.toFixed(0) + ' ' + H + '" width="' + (W / 1000 * size).toFixed(0) + '" height="' + (H / 1000 * size).toFixed(0) + '" role="img" aria-label="' + esc(text) + '">' + g + '<path d="' + d + '"/></svg>';
+}
+function measure(spec, text){ var x = 0; Array.from(text).forEach(function(ch){ var o = gp(spec, ch); x += o ? o.w : 300; }); return x; }
+
+/* ---------- Claude ---------- */
+var sampleP = null, dlP = null;
+function useCap(n){ try { return (window.claude && window.claude.use) ? window.claude.use(n).catch(function(){ return null; }) : Promise.resolve(null); } catch(e){ return Promise.resolve(null); } }
+/* outside Claude (GitHub Pages, local copy): the AI is optional and runs on the user's own Anthropic API key, kept in this browser only */
+var KEYK = 'viewz-type-api';
+function inClaude(){ return !!(window.claude && window.claude.use); }
+function apiConf(){ try { var c = JSON.parse(localStorage.getItem(KEYK) || 'null'); return (c && typeof c.key === 'string' && c.key) ? c : null; } catch(e){ return null; } }
+function fileB64(f){ return new Promise(function(res, rej){ var r = new FileReader(); r.onload = function(){ res(String(r.result).split(',')[1]); }; r.onerror = function(){ rej(new Error('file')); }; r.readAsDataURL(f); }); }
+function apiSample(c){
+  return {
+    limits: function(){ return Promise.resolve({images: true}); },
+    json: async function(prompt, opts){
+      var content = [], imgs = (opts && opts.images) || [], fail = function(code){ var e = new Error(code); e.code = code; return e; };
+      for(var i = 0; i < imgs.length; i++) content.push({type: 'image', source: {type: 'base64', media_type: imgs[i].type || 'image/png', data: await fileB64(imgs[i])}});
+      content.push({type: 'text', text: prompt});
+      var r, j;
+      try { r = await fetch('https://api.anthropic.com/v1/messages', {method: 'POST', headers: {'content-type': 'application/json', 'x-api-key': c.key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'}, body: JSON.stringify({model: c.model || 'claude-sonnet-5-5', max_tokens: 16000, messages: [{role: 'user', content: content}]})}); }
+      catch(err){ throw fail('reseau'); }
+      j = await r.json().catch(function(){ return null; });
+      if(!r.ok) throw fail(r.status === 401 || r.status === 403 ? 'api_key' : r.status === 429 ? 'rate_limited' : r.status === 404 ? 'api_model' : r.status === 413 ? 'image_rejected' : 'api_' + r.status);
+      var t = ((j && j.content) || []).filter(function(b){ return b.type === 'text'; }).map(function(b){ return b.text; }).join(''), a = t.indexOf('{'), z = t.lastIndexOf('}');
+      if(a < 0 || z <= a) throw fail('invalid_json');
+      try { return JSON.parse(t.slice(a, z + 1)); } catch(err){ throw fail('invalid_json'); }
+    }
+  };
+}
+function getSample(){ if(inClaude()) return sampleP || (sampleP = useCap('sample')); var c = apiConf(); return Promise.resolve(c ? apiSample(c) : null); }
+function getDl(){
+  if(inClaude()) return dlP || (dlP = useCap('downloads'));
+  return Promise.resolve({save: function(o){ var a = document.createElement('a'), u = URL.createObjectURL(o.data); a.href = u; a.download = o.filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(u); }, 5000); return Promise.resolve(); }});
+}
+function errMsg(e){
+  var c = e && e.code;
+  if(c === 'not_granted') return "L'accès à Claude n'a pas été autorisé pour cette page. Recharge-la et accepte la demande pour utiliser l'IA.";
+  if(c === 'api_key') return "Clé d'API refusée. Vérifie-la dans « Réglages IA » en bas de page. Si la clé est bonne, ton organisation Anthropic n'autorise peut-être pas les appels depuis un navigateur.";
+  if(c === 'api_model') return "Modèle inconnu de l'API. Corrige son nom dans « Réglages IA » en bas de page.";
+  if(c === 'reseau') return "Impossible de joindre l'API Anthropic. Vérifie ta connexion.";
+  if(c === 'rate_limited') return "Trop de demandes ou limite d'usage atteinte. Réessaie dans quelques minutes.";
+  if(c === 'invalid_json') return "La réponse de l'IA était incomplète. Relance, éventuellement avec un brief plus court.";
+  if(c === 'refused') return "L'IA a refusé cette demande. Reformule le brief ou change d'image.";
+  if(c === 'image_rejected') return "Image refusée (format ou taille). Essaie un JPG ou PNG plus léger.";
+  if(c === 'images_unavailable') return "L'envoi d'images à Claude n'est pas disponible dans cette vue.";
+  if(c === 'session_expired') return "Session expirée. Reconnecte-toi à Claude puis recharge la page.";
+  if(c === 'cancelled') return "Demande annulée.";
+  return "L'IA n'a pas pu répondre (" + (c || 'indisponible') + "). Réessaie dans un instant.";
+}
+var NO_AI = inClaude() ? "L'IA n'est pas disponible dans cette vue. Ouvre cette page depuis Claude (application ou claude.ai) pour l'utiliser." : "L'IA est optionnelle : pour l'activer, entre ta clé d'API Anthropic dans « Réglages IA » en bas de page. Sans clé, l'onglet Reproduire (détourage, recherche par mesure, reconstruction) et l'export de police fonctionnent normalement.";
+function setStatus(el, msg, kind){ el.textContent = msg || ''; el.className = 'status' + (kind === 'err' ? ' err' : '') + (kind === 'busy' ? ' busy' : ''); }
+
+/* ---------- routing ---------- */
+function route(){
+  var v = location.hash === '#creation' ? 'creation' : location.hash === '#reproduire' ? 'reproduire' : 'recherche';
+  ['recherche', 'reproduire', 'creation'].forEach(function(n){ $('view-' + n).hidden = n !== v; if(n === v) $('nav-' + n).setAttribute('aria-current', 'page'); else $('nav-' + n).removeAttribute('aria-current'); });
+  if(v === 'creation') renderAll();
+}
+window.addEventListener('hashchange', route);
+
+/* =====================================================  RECHERCHE  */
+var shotFile = null, loadedFonts = {};
+var EXAMPLE_MATCHES = [
+  {famille: 'Playfair Display', score: 92, raison: 'Didone à fort contraste, empattements fins et horizontaux.'},
+  {famille: 'Bodoni Moda', score: 88, raison: 'Même axe vertical, pleins plus marqués.'},
+  {famille: 'DM Serif Display', score: 79, raison: 'Proportions proches, empattements plus doux.'}
+];
+function setShot(f){
+  if(!f || !/^image\/(jpeg|png|webp|gif)$/.test(f.type)){ setStatus($('id-status'), 'Format non pris en charge. Utilise une image JPG, PNG ou WebP.', 'err'); return; }
+  shotFile = f; var img = $('shot'); img.src = URL.createObjectURL(f); img.hidden = false; $('drop-hint').hidden = true; $('analyze').disabled = false; setStatus($('id-status'), '');
+}
+$('pick').onclick = function(){ $('file').click(); };
+$('file').onchange = function(e){ if(e.target.files[0]) setShot(e.target.files[0]); };
+var drop = $('drop');
+['dragenter', 'dragover'].forEach(function(n){ drop.addEventListener(n, function(e){ e.preventDefault(); drop.classList.add('over'); }); });
+['dragleave', 'drop'].forEach(function(n){ drop.addEventListener(n, function(e){ e.preventDefault(); drop.classList.remove('over'); }); });
+drop.addEventListener('drop', function(e){ var f = e.dataTransfer && e.dataTransfer.files[0]; if(f) setShot(f); });
+document.addEventListener('paste', function(e){ var it = e.clipboardData && e.clipboardData.files; if(!it || !it[0]) return; if(!$('view-recherche').hidden) setShot(it[0]); else if(!$('view-reproduire').hidden) setTrace(it[0]); });
+
+function loadGoogleFont(fam, weight){
+  if(loadedFonts[fam]) return loadedFonts[fam];
+  var q = encodeURIComponent(fam).replace(/%20/g, '+');
+  function tryLink(suffix){ return new Promise(function(res){ var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=' + q + suffix + '&display=swap'; l.onload = function(){ res(true); }; l.onerror = function(){ l.remove(); res(false); }; document.head.appendChild(l); setTimeout(function(){ res(false); }, 8000); }); }
+  loadedFonts[fam] = tryLink(weight && weight !== 400 ? ':wght@' + weight : '').then(function(ok){ if(ok) return weight || 400; return weight && weight !== 400 ? tryLink('').then(function(ok2){ return ok2 ? 400 : 0; }) : 0; });
+  return loadedFonts[fam];
+}
+function renderMatches(list, text, weight, italic){
+  var box = $('matches'); box.innerHTML = '';
+  list.forEach(function(m){
+    var card = document.createElement('article'); card.className = 'card match';
+    card.innerHTML = '<div class="row" style="justify-content:space-between"><h4>' + esc(m.famille) + '</h4><span class="score">' + Math.round(m.score) + ' %</span></div><div class="bar"><b style="width:' + clamp(m.score, 0, 100, 0) + '%"></b></div><div class="spec" style="color:var(--muted)">Chargement…</div><p>' + esc(m.raison || '') + '</p><a class="lk" href="https://fonts.google.com/specimen/' + encodeURIComponent(m.famille).replace(/%20/g, '+') + '">Ouvrir sur Google Fonts</a>';
+    box.appendChild(card);
+    loadGoogleFont(m.famille, weight).then(function(w){
+      var sp = card.querySelector('.spec');
+      if(!w){ card.remove(); return; }
+      sp.style.cssText = 'color:var(--ink);font-family:"' + m.famille.replace(/"/g, '') + '",var(--body);font-weight:' + w + ';font-style:' + (italic ? 'italic' : 'normal');
+      sp.textContent = text; sp.dataset.live = '1';
+    });
+  });
+}
+$('id-text').oninput = function(){ var t = this.value || 'Typographie'; document.querySelectorAll('#matches .spec[data-live]').forEach(function(s){ s.textContent = t; }); };
+
+var lastId = null;
+$('analyze').onclick = async function(){
+  var st = $('id-status'), btn = this, sample = await getSample();
+  if(!sample){ setStatus(st, NO_AI, 'err'); return; }
+  var lim = await sample.limits().catch(function(){ return null; });
+  if(!lim || !lim.images){ setStatus(st, errMsg({code: 'images_unavailable'}), 'err'); return; }
+  btn.disabled = true; setStatus(st, 'Analyse des lettres en cours (30 à 60 secondes)', 'busy');
+  var note = $('note').value.trim();
+  var prompt = "Tu es expert en identification de caractères typographiques. Analyse le texte visible dans l'image jointe et identifie sa police." + (note ? " Contexte donné par l'utilisateur : " + note + "." : "") +
+    "\nRéponds uniquement avec un objet JSON de cette forme exacte :\n" +
+    '{"texte":"le texte lu dans l\'image, 40 caractères max","classification":"ex. Didone, linéale géométrique, gothique textura, script au pinceau","traits":["4 à 6 caractéristiques observées, courtes"],"graisse":400,"italique":false,"probable":{"nom":"police la plus probable, commerciale ou libre","fonderie":"si connue, sinon chaîne vide","confiance":0},"google":[{"famille":"nom exact sur Google Fonts","score":0,"raison":"une phrase courte"}]}' +
+    "\nRègles : graisse de 100 à 900 ; confiance et score de 0 à 100, honnêtes ; \"google\" contient 8 familles réellement présentes dans le catalogue Google Fonts, orthographe exacte, de la plus ressemblante à la moins ressemblante ; si la police probable est elle-même sur Google Fonts, elle est en premier. Rédige en français. Si aucun texte n'est lisible, réponds {\"erreur\":\"explication courte\"}.";
+  try {
+    var r = await sample.json(prompt, {images: [shotFile], modelTier: 'complex'});
+    if(!r || r.erreur || !Array.isArray(r.google)){ setStatus(st, (r && r.erreur) ? String(r.erreur) : "Aucune typographie lisible trouvée dans cette image.", 'err'); return; }
+    lastId = r; showId(r); setStatus(st, 'Analyse terminée. Compare à l\'œil : l\'identification par IA reste une estimation.');
+  } catch(e){ setStatus(st, errMsg(e), 'err'); }
+  finally { btn.disabled = false; }
+};
+function showId(r){
+  var pr = r.probable || {}, w = Math.round(clamp(r.graisse, 100, 900, 400) / 100) * 100;
+  $('id-facts').innerHTML = '<div><dt>Police la plus probable</dt><dd>' + esc(pr.nom || 'Non déterminée') + (pr.fonderie ? ' <span style="font:400 13px var(--body);color:var(--muted)">' + esc(pr.fonderie) + '</span>' : '') + '</dd></div><div><dt>Confiance</dt><dd>' + Math.round(clamp(pr.confiance, 0, 100, 0)) + ' %</dd></div><div><dt>Classification</dt><dd>' + esc(r.classification || '') + '</dd></div>';
+  $('id-traits').innerHTML = (Array.isArray(r.traits) ? r.traits : []).slice(0, 6).map(function(t){ return '<li>' + esc(t) + '</li>'; }).join('');
+  var text = String(r.texte || 'Typographie').slice(0, 60); $('id-text').value = text;
+  $('id-result').hidden = false; $('match-title').textContent = 'Les plus ressemblantes sur Google Fonts';
+  renderMatches(r.google.filter(function(m){ return m && m.famille; }).slice(0, 8).map(function(m){ return {famille: String(m.famille), score: clamp(m.score, 0, 100, 0), raison: String(m.raison || '')}; }), text, w, !!r.italique);
+}
+$('to-create').onclick = function(){
+  if(!lastId) return;
+  $('precisions').value = "Dans l'esprit de : " + (lastId.classification || '') + ". " + (Array.isArray(lastId.traits) ? lastId.traits.join(', ') : '') + '.';
+  updateBrief(); location.hash = '#creation';
+};
+
+/* =====================================================  CREATION  */
+var CHIPS = {
+  famille: ['Linéale', 'Géométrique', 'Empattements', 'Mécane', 'Didone', 'Médiévale gothique', 'Onciale', 'Chancelière', 'Manuscrite', 'Pinceau', 'Graffiti', 'Art déco', 'Stencil', 'Monospace'],
+  graisse: ['Fine', 'Normale', 'Grasse', 'Noire'],
+  largeur: ['Étroite', 'Normale', 'Large'],
+  ambiance: ['Élégante', 'Brute', 'Organique', 'Futuriste', 'Rétro', 'Luxe', 'Ludique', 'Sacrée', 'Urbaine']
+};
+var MULTI = {famille: true, ambiance: true};
+var sel = {famille: [], graisse: [], largeur: [], ambiance: []};
+Object.keys(CHIPS).forEach(function(g){
+  var box = $('c-' + g);
+  CHIPS[g].forEach(function(name){
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = name; b.setAttribute('aria-pressed', 'false');
+    b.onclick = function(){
+      var i = sel[g].indexOf(name);
+      if(i >= 0) sel[g].splice(i, 1); else { if(!MULTI[g]) sel[g] = []; sel[g].push(name); }
+      Array.from(box.children).forEach(function(c){ c.setAttribute('aria-pressed', sel[g].indexOf(c.textContent) >= 0 ? 'true' : 'false'); });
+      updateBrief();
+    };
+    box.appendChild(b);
+  });
+});
+function briefText(){
+  var parts = [];
+  parts.push(sel.famille.length ? 'Famille : ' + sel.famille.join(', ') : 'Famille : libre, quatre familles différentes');
+  if(sel.graisse.length) parts.push('Graisse : ' + sel.graisse[0]);
+  if(sel.largeur.length) parts.push('Largeur : ' + sel.largeur[0]);
+  if(sel.ambiance.length) parts.push('Ambiance : ' + sel.ambiance.join(', '));
+  var p = $('precisions').value.trim(); if(p) parts.push('Précisions : ' + p);
+  return parts.join('\n');
+}
+function updateBrief(){ $('brief').textContent = briefText(); }
+$('precisions').oninput = updateBrief;
+
+var RULES = [
+  "SYSTÈME DE DESSIN, à respecter strictement :",
+  "- Unités : cadratin de 1000. Axe y vers le HAUT. Ligne de base à y=0. Les métriques donnent cap (hauteur de capitale), x (hauteur d'x), asc (ascendantes), desc (descendantes, négatif).",
+  "- Un glyphe s'écrit {\"w\": chasse, \"s\": [traits]}. Le dessin tient entre x=0 et x=w, avec une approche d'environ 60 à 90 unités de chaque côté.",
+  "- Chaque trait est la LIGNE MÉDIANE d'un tracé de plume, écrite comme un chemin SVG avec uniquement les commandes ABSOLUES M, L, Q, C. Pas de Z, pas d'arc A. Un point isolé (point du i, point final) s'écrit \"M x y L x y\".",
+  "- La plume ajoute l'épaisseur autour de la ligne médiane (largeur/2 de chaque côté). Pour qu'une capitale mesure cap de haut, ses lignes médianes vont de y=largeur/2 à y=cap-largeur/2. Même logique pour la hauteur d'x et les descendantes.",
+  "- Les rondes (O, C, S, a, e, o) sont de vraies courbes C ou Q lisses, jamais des polygones. Un O fermé revient à son point de départ.",
+  "- Les empattements, quand la famille en demande, sont de courts traits supplémentaires.",
+  "- Plume : {\"forme\": \"ronde\" | \"droite\" | \"plume\" | \"pinceau\", \"largeur\": 20 à 220, \"contraste\": 0 à 0.9, \"angle\": 0 à 90}. ronde = épaisseur constante, bouts ronds. droite = épaisseur constante, bouts coupés net (linéales, mécanes, stencil). plume = plume plate de calligraphe tenue à l'angle donné, pleins et déliés (gothique, onciale, chancelière, didone, empattements contrastés). pinceau = bec elliptique, pleins et déliés adoucis. contraste et angle ne servent que pour plume et pinceau.",
+  "- Exemple pour largeur 90 et cap 700 : \"H\": {\"w\":700,\"s\":[\"M120 45 L120 655\",\"M580 45 L580 655\",\"M120 350 L580 350\"]}",
+  "- Soigne la cohérence : mêmes proportions, mêmes hauteurs, même logique de construction pour toutes les lettres."
+].join('\n');
+
+var EX_GLYPHS = {V: {w: 680, s: ['M70 655 L340 45 L610 655']}, I: {w: 260, s: ['M130 45 L130 655']}, E: {w: 600, s: ['M110 45 L110 655', 'M110 655 L520 655', 'M110 350 L470 350', 'M110 45 L520 45']}, W: {w: 940, s: ['M70 655 L260 45 L470 655 L680 45 L870 655']}, Z: {w: 640, s: ['M90 655 L550 655 L90 45 L550 45']}};
+var EXAMPLES = [
+  {nom: 'Linéale ronde', categorie: 'Linéale', description: 'Trait constant, bouts ronds, lecture franche.', plume: {forme: 'ronde', largeur: 80, contraste: 0, angle: 0}, glyphes: EX_GLYPHS},
+  {nom: 'Plume gothique', categorie: 'Médiévale', description: 'Plume plate à 40 degrés, pleins lourds et déliés vifs.', plume: {forme: 'plume', largeur: 120, contraste: 0.8, angle: 40}, glyphes: EX_GLYPHS},
+  {nom: 'Mécane noire', categorie: 'Mécane', description: 'Masse compacte, coupes nettes, présence d\'affiche.', plume: {forme: 'droite', largeur: 150, contraste: 0, angle: 0}, glyphes: EX_GLYPHS},
+  {nom: 'Pinceau penché', categorie: 'Pinceau', description: 'Bec elliptique incliné, geste rapide.', plume: {forme: 'pinceau', largeur: 105, contraste: 0.62, angle: 25}, inclinaison: 12, glyphes: EX_GLYPHS}
+];
+var pistes = EXAMPLES.map(prep), pistesAreExamples = true;
+var font = prep(EXAMPLES[1]), fontIsExample = true, missing = [];
+var GROUPS = [
+  {id: 'cap', label: 'capitales', chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', extra: ''},
+  {id: 'bdc', label: 'minuscules', chars: 'abcdefghijklmnopqrstuvwxyzı', extra: "Le caractère ı est le i sans point."},
+  {id: 'num', label: 'chiffres, ponctuation et accents', chars: "0123456789.,;:!?'-()&´`ˆ¨¸", extra: "Les cinq derniers sont les accents ´ (aigu), ` (grave), ˆ (circonflexe), ¨ (tréma), ¸ (cédille) : dessine-les à la place qu'ils occupent au-dessus d'une minuscule comme e (juste au-dessus de la hauteur d'x), ou sous la ligne de base pour la cédille, centrés dans une chasse w de 500."}
+];
+
+function pisteCard(p, i){
+  var word = $('mot').value.trim() || 'VIEWZ';
+  return '<article class="card"><div class="row" style="justify-content:space-between"><h4>' + esc(p.nom) + '</h4><span class="tag">' + esc(p.categorie || p.plume.forme) + '</span></div><div class="spec">' + textSVG(p, word, 62, false) + '</div><p>' + esc(p.description) + '</p><button type="button" class="ghost" data-dev="' + i + '">Développer cette piste</button></article>';
+}
+function renderPistes(){
+  $('pistes').innerHTML = pistes.map(pisteCard).join('');
+  $('pistes-ex').hidden = !pistesAreExamples;
+}
+$('pistes').addEventListener('click', function(e){ var b = e.target.closest('[data-dev]'); if(b) develop(pistes[+b.dataset.dev]); });
+$('mot').oninput = function(){ if(pistesAreExamples) return; renderPistes(); };
+
+var SLIDERS = [
+  {k: 'largeur', label: 'Largeur de plume', min: 20, max: 220, step: 2, get: function(){ return font.plume.largeur; }, set: function(v){ font.plume.largeur = v; }},
+  {k: 'contraste', label: 'Contraste pleins et déliés', min: 0, max: 0.9, step: 0.02, get: function(){ return font.plume.contraste; }, set: function(v){ font.plume.contraste = v; }},
+  {k: 'angle', label: 'Angle de plume (degrés)', min: 0, max: 90, step: 1, get: function(){ return font.plume.angle; }, set: function(v){ font.plume.angle = v; }},
+  {k: 'inclinaison', label: 'Inclinaison (degrés)', min: -15, max: 30, step: 1, get: function(){ return font.inclinaison; }, set: function(v){ font.inclinaison = v; }},
+  {k: 'espacement', label: 'Espacement', min: -40, max: 160, step: 2, get: function(){ return font.espacement; }, set: function(v){ font.espacement = v; }},
+  {k: 'graisse', label: 'Graisse des lettres détourées', min: -40, max: 40, step: 1, get: function(){ return font.graisse; }, set: function(v){ font.graisse = v; }},
+  {k: 'dd', label: 'Donneuse : graisse', min: -70, max: 130, step: 1, don: 1, get: function(){ return font.donneur ? font.donneur.d : 0; }, set: function(v){ if(font.donneur) font.donneur.d = v; }},
+  {k: 'dsx', label: 'Donneuse : largeur', min: 0.55, max: 1.8, step: 0.01, don: 1, get: function(){ return font.donneur ? font.donneur.sx : 1; }, set: function(v){ if(font.donneur) font.donneur.sx = v; }},
+  {k: 'dxh', label: 'Donneuse : hauteur d\'x (%)', min: 70, max: 130, step: 1, don: 1, get: function(){ return font.donneur ? font.donneur.xh : 100; }, set: function(v){ if(font.donneur) font.donneur.xh = v; }},
+  {k: 'dst', label: 'Donneuse : caractère de tes lettres (%)', min: 0, max: 150, step: 5, don: 1, get: function(){ return font.donneur ? font.donneur.st : 0; }, set: function(v){ if(font.donneur) font.donneur.st = v; }},
+  {k: 'dr', label: 'Donneuse : arrondi des angles', min: 0, max: 40, step: 1, don: 1, get: function(){ return font.donneur ? font.donneur.r : 0; }, set: function(v){ if(font.donneur) font.donneur.r = v; }},
+  {k: 'taille', label: 'Taille d\'aperçu (px)', min: 28, max: 200, step: 2, get: function(){ return view.size; }, set: function(v){ view.size = v; }}
+];
+var view = {size: 96};
+function buildSliders(){
+  var h = '<label class="sl"><span>Type de plume</span><select id="s-forme">' + [['ronde', 'Ronde, trait constant'], ['droite', 'Droite, coupes nettes'], ['plume', 'Plume plate de calligraphe'], ['pinceau', 'Pinceau elliptique']].map(function(o){ return '<option value="' + o[0] + '">' + o[1] + '</option>'; }).join('') + '</select></label>';
+  SLIDERS.forEach(function(s){ h += '<label class="sl"><span>' + s.label + '<output id="o-' + s.k + '"></output></span><input type="range" id="s-' + s.k + '" min="' + s.min + '" max="' + s.max + '" step="' + s.step + '"></label>'; });
+  $('sliders').innerHTML = h;
+  $('s-forme').onchange = function(){ font.plume.forme = this.value; syncSliders(); queueRender(); };
+  SLIDERS.forEach(function(s){ $('s-' + s.k).oninput = function(){ s.set(parseFloat(this.value)); $('o-' + s.k).textContent = this.value; queueRender(); }; });
+}
+function syncSliders(){
+  $('s-forme').value = font.plume.forme;
+  SLIDERS.forEach(function(s){ $('s-' + s.k).value = s.get(); $('o-' + s.k).textContent = s.get(); });
+  var cal = font.plume.forme === 'plume' || font.plume.forme === 'pinceau';
+  $('s-contraste').disabled = !cal; $('s-angle').disabled = !cal;
+  SLIDERS.forEach(function(s){ if(s.don) $('s-' + s.k).disabled = !font.donneur; });
+}
+var raf = 0;
+function queueRender(){ cache = {}; if(font.donneur) font._comp = null; cancelAnimationFrame(raf); raf = requestAnimationFrame(function(){ renderSpecimen(); save(); }); }
+function renderSpecimen(){
+  var box = $('specimen'), text = $('try').value || ' ', cw = Math.max(200, box.clientWidth - 34), maxU = cw / view.size * 1000;
+  var words = text.split(/\s+/).filter(Boolean), lines = [], cur = '';
+  words.forEach(function(w){ var t = cur ? cur + ' ' + w : w; if(cur && measure(font, t) > maxU){ lines.push(cur); cur = w; } else cur = t; });
+  if(cur) lines.push(cur);
+  box.innerHTML = lines.slice(0, 8).map(function(l, i){ return textSVG(font, l, view.size, i === 0); }).join('');
+}
+function renderGlyphs(){
+  fillDonor(font);
+  var comp = getComp(font), keys = Object.keys(comp).filter(function(k){ return k !== ' ' && !MARKS[k] && k !== 'ı'; }).sort(function(a, b){ return a.codePointAt(0) - b.codePointAt(0); });
+  $('glyphs').innerHTML = keys.map(function(k){ return '<div>' + textSVG(font, k, 40, false) + '<small>' + esc(k) + '</small></div>'; }).join('');
+  $('font-count').textContent = keys.length + ' glyphes';
+}
+function renderAtelier(){
+  $('font-name').textContent = font.nom; $('font-desc').textContent = font.description; $('font-ex').hidden = !fontIsExample;
+  syncSliders(); renderSpecimen(); renderGlyphs();
+  if(font.donneur && !LIBMAP[font.donneur.id]) ensureFonts([font.donneur.id]).then(function(){ cache = {}; font._comp = null; renderSpecimen(); renderGlyphs(); }).catch(function(){ setStatus($('dev-status'), 'La bibliothèque de polices n\'a pas pu être chargée. Recharge la page.', 'err'); });
+  $('retry').hidden = !missing.length;
+}
+$('try').oninput = function(){ renderSpecimen(); };
+$('fname').oninput = function(){ font.nom = this.value.trim() || 'Sans titre'; $('font-name').textContent = font.nom; save(); };
+$('specimen').parentNode.querySelector('details').addEventListener('toggle', function(){ if(this.open) renderGlyphs(); });
+var rz = 0; window.addEventListener('resize', function(){ clearTimeout(rz); rz = setTimeout(function(){ if(!$('view-creation').hidden) renderSpecimen(); }, 150); });
+function renderAll(){ renderPistes(); renderAtelier(); }
+
+/* ---- generate pistes ---- */
+$('gen').onclick = async function(){
+  var st = $('gen-status'), btn = this, sample = await getSample();
+  if(!sample){ setStatus(st, NO_AI, 'err'); return; }
+  var word = ($('mot').value.trim() || 'VIEWZ'), set = Array.from(new Set(Array.from(word.replace(/\s/g, '')))).slice(0, 12);
+  btn.disabled = true; setStatus(st, 'Dessin de quatre pistes (environ une minute)', 'busy');
+  var prompt = "Tu es dessinateur de caractères. Propose 4 pistes typographiques nettement différentes les unes des autres pour ce brief.\n\nBRIEF\n" + briefText() + "\n\n" + RULES +
+    "\n\nPour chaque piste, dessine uniquement ces caractères : " + JSON.stringify(set) + ".\nRéponds uniquement avec un objet JSON de cette forme :\n" +
+    '{"pistes":[{"nom":"nom court et évocateur","categorie":"famille typographique","description":"une phrase en français sur le parti pris","plume":{"forme":"plume","largeur":110,"contraste":0.75,"angle":35},"inclinaison":0,"metriques":{"cap":700,"x":480,"asc":750,"desc":-220},"glyphes":{"H":{"w":700,"s":["M120 55 L120 645"]}}}]}' +
+    "\nFais varier la plume, les proportions et la construction des lettres d'une piste à l'autre. Respecte la graisse, la largeur et l'ambiance demandées.";
+  try {
+    var r = await sample.json(prompt, {cache: false});
+    var list = (r && Array.isArray(r.pistes) ? r.pistes : []).map(prep).filter(function(p){ return Object.keys(getComp(p)).length > 1; });
+    if(!list.length) throw {code: 'invalid_json'};
+    pistes = list; pistesAreExamples = false; renderPistes(); save();
+    setStatus(st, list.length + ' pistes prêtes. Choisis celle à développer, ou relance pour en voir d\'autres.');
+  } catch(e){ setStatus(st, errMsg(e), 'err'); }
+  finally { btn.disabled = false; }
+};
+
+/* ---- develop a piste into a full alphabet ---- */
+var RULES_OUT = [
+  "SYSTÈME DE DESSIN, à respecter strictement :",
+  "- Unités : cadratin de 1000. Axe y vers le HAUT. Ligne de base à y=0. cap = hauteur de capitale, x = hauteur d'x, desc = descendantes (négatif).",
+  "- Un glyphe s'écrit {\"w\": chasse, \"c\": [contours]}. Le dessin tient entre x=0 et x=w, avec une approche d'environ 40 à 70 unités de chaque côté.",
+  "- Chaque contour est une forme PLEINE et FERMÉE : un chemin SVG en commandes ABSOLUES M, L, Q, C, terminé par Z. Les contreformes (les trous du a, b, d, e, o) sont des contours supplémentaires placés à l'intérieur de la forme : ils seront évidés.",
+  "- Utilise de vraies courbes C ou Q pour les rondes. Reprends l'épaisseur des fûts, la forme des terminaisons, le contraste et les proportions des lettres de référence.",
+  "- Exemple de forme : un I sans empattement de graisse 150 et de hauteur 700 s'écrit {\"w\":270,\"c\":[\"M60 0 L210 0 L210 700 L60 700 Z\"]}"
+].join('\n');
+function refContours(spec){
+  var comp = getComp(spec), out = {};
+  Object.keys(spec.glyphes).filter(function(k){ return spec.glyphes[k] && spec.glyphes[k].p; }).slice(0, 4).forEach(function(k){
+    var g = comp[k]; if(!g) return;
+    out[k] = {w: Math.round(g.w), c: g.polys.map(function(p){ var stp = Math.max(1, Math.ceil(p.length / 48)); return 'M' + p.filter(function(_, i){ return i % stp === 0; }).map(function(q){ return Math.round(q[0]) + ' ' + Math.round(q[1]); }).join(' L') + ' Z'; })};
+  });
+  return out;
+}
+async function runGroups(base, groups){
+  var st = $('dev-status'), sample = await getSample();
+  if(!sample){ setStatus(st, NO_AI, 'err'); return; }
+  var img = base.source === 'image', have = {}, opts = {cache: false, modelTier: 'complex'}, head, fmt;
+  if(img){
+    Object.keys(base.glyphes).forEach(function(k){ if(base.glyphes[k] && base.glyphes[k].p) have[k] = 1; });
+    var lim = await sample.limits().catch(function(){ return null; }), withImg = !!(lim && lim.images && traceFile);
+    if(withImg) opts.images = [traceFile];
+    head = "Tu es dessinateur de caractères. Voici des lettres détourées d'une typographie existante" + (withImg ? " (l'image jointe montre les lettres d'origine)" : "") + ". Dessine les caractères manquants dans exactement le même style : même graisse, mêmes terminaisons, mêmes proportions, mêmes courbes.\n\nMÉTRIQUES\n" + JSON.stringify(base.metriques) + "\n\nLETTRES DE RÉFÉRENCE (contours)\n" + JSON.stringify(refContours(base)) + "\n\n" + RULES_OUT;
+    fmt = '{"glyphes":{"n":{"w":600,"c":["M70 0 L70 490 L220 490 L220 0 Z"]}}}';
+  } else {
+    var ref = {}; Object.keys(base.glyphes).slice(0, 6).forEach(function(k){ ref[k] = base.glyphes[k]; });
+    head = "Tu es dessinateur de caractères. Tu développes une piste typographique existante en alphabet complet. Garde exactement son esprit, ses proportions et sa logique de construction.\n\nPISTE\n" +
+      JSON.stringify({nom: base.nom, categorie: base.categorie, description: base.description, plume: base.plume, metriques: base.metriques}) +
+      "\n\nGLYPHES DE RÉFÉRENCE déjà dessinés\n" + JSON.stringify(ref) + "\n\n" + RULES;
+    fmt = '{"glyphes":{"A":{"w":640,"s":["M..."]}}}';
+  }
+  var done = 0; $('export').disabled = true; $('retry').hidden = true;
+  setStatus(st, 'Dessin de l\'alphabet : 0 groupe sur ' + groups.length + ' (une à trois minutes)', 'busy');
+  var results = await Promise.all(groups.map(function(g){
+    var chars = Array.from(g.chars).filter(function(c){ return !have[c]; });
+    if(!chars.length) return {g: g, skip: true};
+    var prompt = head + "\n\nDessine maintenant ces caractères (" + g.label + "), tous, sans en oublier : " + JSON.stringify(chars) + ". " + g.extra +
+      "\nRéponds uniquement avec un objet JSON de cette forme : " + fmt;
+    return sample.json(prompt, opts).then(function(r){
+      done++; setStatus(st, 'Dessin de l\'alphabet : ' + done + ' groupe' + (done > 1 ? 's' : '') + ' sur ' + groups.length, 'busy');
+      return {g: g, glyphes: r && r.glyphes};
+    }).catch(function(e){ return {g: g, err: e}; });
+  }));
+  var failed = [], lastErr = null;
+  results.forEach(function(r){
+    if(r.skip) return;
+    if(r.glyphes && typeof r.glyphes === 'object' && Object.keys(r.glyphes).length){ Object.keys(r.glyphes).forEach(function(k){ if(!have[k]) font.glyphes[k] = r.glyphes[k]; }); }
+    else { failed.push(r.g); lastErr = r.err || {code: 'invalid_json'}; }
+  });
+  font._comp = null; font._id = ++uid; cache = {}; missing = failed;
+  if(failed.length < groups.length){ fontIsExample = false; if($('try').value === 'VIEWZ' || !$('try').value || img) $('try').value = 'Portez ce vieux whisky au juge blond qui fume'; }
+  $('export').disabled = false; renderAtelier(); save();
+  if(failed.length) setStatus(st, 'Groupes non dessinés : ' + failed.map(function(g){ return g.label; }).join(', ') + '. ' + errMsg(lastErr), 'err');
+  else setStatus(st, img ? 'Lettres manquantes dessinées par l\'IA dans l\'esprit des originales. C\'est une approximation : compare avec tes lettres détourées.' : 'Alphabet complet prêt. Ajuste la plume avec les curseurs, puis télécharge.');
+}
+function develop(p){
+  font = prep(JSON.parse(JSON.stringify({nom: p.nom, categorie: p.categorie, description: p.description, plume: p.plume, inclinaison: p.inclinaison, espacement: p.espacement, metriques: p.metriques, glyphes: p.glyphes})));
+  fontIsExample = pistesAreExamples; missing = []; $('fname').value = font.nom; $('try').value = $('mot').value.trim() || 'VIEWZ';
+  renderAtelier(); $('atelier').scrollIntoView({behavior: 'smooth', block: 'start'});
+  runGroups(font, GROUPS);
+}
+$('retry').onclick = function(){ if(missing.length) runGroups(font, missing.slice()); };
+
+/* ---- export ---- */
+$('export').onclick = async function(){
+  var st = $('exp-status'), btn = this, dl = await getDl();
+  if(!dl){ setStatus(st, "Le téléchargement n'est pas disponible dans cette vue. Ouvre cette page depuis Claude.", 'err'); return; }
+  btn.disabled = true;
+  try {
+    var family = (font.nom || 'VIEWZ Type').replace(/[^\w \-]/g, '').trim() || 'VIEWZ Type', slug = family.replace(/\s+/g, '-');
+    if(font.donneur){ await ensureFonts([font.donneur.id]); fillDonor(font); }
+    var f = buildFont(font, getComp(font), family), buf = f.toArrayBuffer();
+    var zip = new JSZip();
+    zip.file(slug + '.otf', buf);
+    zip.file(slug + '-planche.svg', textSVG(font, $('try').value || family, 200, false).replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" fill="#111" '));
+    zip.file(slug + '-source.json', JSON.stringify({nom: font.nom, categorie: font.categorie, description: font.description, plume: font.plume, inclinaison: font.inclinaison, espacement: font.espacement, metriques: font.metriques, glyphes: font.glyphes}));
+    zip.file('LISEZMOI.txt', family + "\nPolice dessinée avec VIEWZ Type (VIEWZ Studio, viewz-studio.com).\n\nInstallation sur Mac : double-clique sur le fichier .otf, puis sur Installer dans le Livre des polices.\nInstallation sur Windows : clic droit sur le fichier .otf, puis Installer.\n\nContenu : la police (.otf), une planche vectorielle (.svg) et la source du dessin (.json).\nCette police est une base de travail. Pour un usage professionnel, retouche les courbes et les approches dans Glyphs ou FontForge.\n");
+    if(font.donneur && LIBMAP[font.donneur.id]) zip.file('LICENCE-OFL.txt', "Les glyphes reconstruits de cette police dérivent de la police libre " + LIBMAP[font.donneur.id].nom + " (copyright de ses auteurs, voir fonts.google.com), distribuée sous licence SIL Open Font License 1.1.\nLa police dérivée reste soumise à cette même licence : https://openfontlicense.org\nElle peut être utilisée librement dans des créations, y compris commerciales. Le fichier de police lui-même ne peut pas être vendu seul, et ne doit pas porter le nom de la police d'origine.\n");
+    var blob = await zip.generateAsync({type: 'blob'});
+    await dl.save({filename: slug + '.zip', data: blob});
+    setStatus(st, 'Archive enregistrée : elle contient ' + slug + '.otf, la planche SVG et un mode d\'emploi.');
+  } catch(e){
+    setStatus(st, e && e.code === 'declined' ? 'Téléchargement annulé.' : "Le fichier n'a pas pu être enregistré (" + ((e && (e.code || e.message)) || 'erreur') + ").", 'err');
+  } finally { btn.disabled = false; }
+};
+
+/* =====================================================  REPRODUIRE  */
+var traceFile = null, traceBase = null, shapes = [], tp = {light: 1, thr: 128, blur: 4, clean: 3, soft: 6, scale: 0, size: 100, side: 45}, tpT = 0;
+function grayFromImage(img){
+  var sc = Math.min(1, 1300 / Math.max(img.naturalWidth, img.naturalHeight)), w = Math.max(1, Math.round(img.naturalWidth * sc)), h = Math.max(1, Math.round(img.naturalHeight * sc));
+  var c = document.createElement('canvas'); c.width = w; c.height = h; var x = c.getContext('2d', {willReadFrequently: true});
+  x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.drawImage(img, 0, 0, w, h);
+  var d = x.getImageData(0, 0, w, h).data, g = new Float32Array(w * h), i;
+  for(i = 0; i < w * h; i++) g[i] = 0.299 * d[4*i] + 0.587 * d[4*i+1] + 0.114 * d[4*i+2];
+  return {w: w, h: h, g: g};
+}
+function blurGray(g, w, h, r){
+  r = Math.round(r); if(r < 1) return g;
+  var a = g, b, pass, x, y, sum, n = 2 * r + 1;
+  for(pass = 0; pass < 2; pass++){
+    b = new Float32Array(w * h);
+    for(y = 0; y < h; y++){ sum = 0; for(x = -r; x <= r; x++) sum += a[y * w + Math.min(w - 1, Math.max(0, x))]; for(x = 0; x < w; x++){ b[y * w + x] = sum / n; sum += a[y * w + Math.min(w - 1, x + r + 1)] - a[y * w + Math.max(0, x - r)]; } }
+    a = new Float32Array(w * h);
+    for(x = 0; x < w; x++){ sum = 0; for(y = -r; y <= r; y++) sum += b[Math.min(h - 1, Math.max(0, y)) * w + x]; for(y = 0; y < h; y++){ a[y * w + x] = sum / n; sum += b[Math.min(h - 1, y + r + 1) * w + x] - b[Math.max(0, y - r) * w + x]; } }
+  }
+  return a;
+}
+function otsu(g){
+  var hist = new Float64Array(256), i, tot = g.length, sum = 0, sb = 0, wb = 0, best = 0, thr = 128;
+  for(i = 0; i < tot; i++) hist[Math.min(255, Math.max(0, g[i] | 0))]++;
+  for(i = 0; i < 256; i++) sum += i * hist[i];
+  for(i = 0; i < 256; i++){ wb += hist[i]; if(!wb) continue; var wf = tot - wb; if(!wf) break; sb += i * hist[i]; var d = sb / wb - (sum - sb) / wf, v = wb * wf * d * d; if(v > best){ best = v; thr = i; } }
+  return thr;
+}
+function labelComps(mask, w, h, target, conn8){
+  var lab = new Int32Array(w * h).fill(-1), comps = [], stack = new Int32Array(w * h), i, sp, p, x, y, q, dx, dy;
+  for(i = 0; i < w * h; i++){
+    if(mask[i] !== target || lab[i] >= 0) continue;
+    var c = {area: 0, x0: w, y0: h, x1: 0, y1: 0, border: false}, id = comps.length; comps.push(c);
+    sp = 0; stack[sp++] = i; lab[i] = id;
+    while(sp){
+      p = stack[--sp]; x = p % w; y = (p / w) | 0; c.area++;
+      if(x < c.x0) c.x0 = x; if(x > c.x1) c.x1 = x; if(y < c.y0) c.y0 = y; if(y > c.y1) c.y1 = y;
+      if(x === 0 || y === 0 || x === w - 1 || y === h - 1) c.border = true;
+      for(dy = -1; dy <= 1; dy++) for(dx = -1; dx <= 1; dx++){
+        if((!dx && !dy) || (!conn8 && dx && dy)) continue;
+        var nx = x + dx, ny = y + dy; if(nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+        q = ny * w + nx; if(mask[q] === target && lab[q] < 0){ lab[q] = id; stack[sp++] = q; }
+      }
+    }
+  }
+  return {lab: lab, comps: comps};
+}
+function traceLoops(glab, w, h, gi, bb){
+  var W1 = w + 1, out = new Map(), x, y, loops = [];
+  function add(a, b){ var l = out.get(a); if(l) l.push(b); else out.set(a, [b]); }
+  for(y = bb.y0; y <= bb.y1; y++) for(x = bb.x0; x <= bb.x1; x++){
+    if(glab[y * w + x] !== gi) continue;
+    if(y === 0 || glab[(y - 1) * w + x] !== gi) add(y * W1 + x, y * W1 + x + 1);
+    if(x === w - 1 || glab[y * w + x + 1] !== gi) add(y * W1 + x + 1, (y + 1) * W1 + x + 1);
+    if(y === h - 1 || glab[(y + 1) * w + x] !== gi) add((y + 1) * W1 + x + 1, (y + 1) * W1 + x);
+    if(x === 0 || glab[y * w + x - 1] !== gi) add((y + 1) * W1 + x, y * W1 + x);
+  }
+  out.forEach(function(list, start){
+    while(list.length){
+      var loop = [], cur = start, guard = 0;
+      do { loop.push([cur % W1, (cur / W1) | 0]); var l = out.get(cur); if(!l || !l.length) break; cur = l.pop(); } while(cur !== start && ++guard < 4e6);
+      if(loop.length >= 8) loops.push(loop);
+    }
+  });
+  return loops;
+}
+function smoothLoop(loop, n){
+  var a = loop, k, i, L = loop.length;
+  for(k = 0; k < n * 2; k++){ var b = new Array(L); for(i = 0; i < L; i++){ var p = a[(i + L - 1) % L], c = a[i], q = a[(i + 1) % L]; b[i] = [(p[0] + 2 * c[0] + q[0]) / 4, (p[1] + 2 * c[1] + q[1]) / 4]; } a = b; }
+  return a;
+}
+function rdp(pts, eps){
+  var keep = new Uint8Array(pts.length), st = [[0, pts.length - 1]]; keep[0] = keep[pts.length - 1] = 1;
+  while(st.length){
+    var s = st.pop(), a = pts[s[0]], b = pts[s[1]], dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy) || 1, md = 0, mi = -1, i;
+    for(i = s[0] + 1; i < s[1]; i++){ var d = Math.abs((pts[i][0] - a[0]) * dy - (pts[i][1] - a[1]) * dx) / len; if(d > md){ md = d; mi = i; } }
+    if(mi >= 0 && md > eps){ keep[mi] = 1; st.push([s[0], mi], [mi, s[1]]); }
+  }
+  return pts.filter(function(_, i){ return keep[i]; });
+}
+function simplifyLoop(loop, eps){
+  var far = 0, md = 0, i; for(i = 1; i < loop.length; i++){ var d = Math.hypot(loop[i][0] - loop[0][0], loop[i][1] - loop[0][1]); if(d > md){ md = d; far = i; } }
+  var a = rdp(loop.slice(0, far + 1), eps), b = rdp(loop.slice(far).concat([loop[0]]), eps);
+  return a.concat(b.slice(1, -1));
+}
+function processTrace(){
+  if(!traceBase) return;
+  var w = traceBase.w, h = traceBase.h, G = blurGray(traceBase.g, w, h, tp.blur), mask = new Uint8Array(w * h), i;
+  for(i = 0; i < w * h; i++) mask[i] = (tp.light ? G[i] > tp.thr : G[i] < tp.thr) ? 1 : 0;
+  var fg = labelComps(mask, w, h, 1, true), big = 0;
+  fg.comps.forEach(function(c){ if(!(c.border && c.area > 0.35 * w * h) && c.area > big) big = c.area; });
+  var minA = Math.max(12, big * tp.clean / 100);
+  for(i = 0; i < w * h; i++) if(fg.lab[i] >= 0){ var c0 = fg.comps[fg.lab[i]]; if(c0.area < minA || (c0.border && c0.area > 0.35 * w * h)) mask[i] = 0; }
+  var bg = labelComps(mask, w, h, 0, false);
+  for(i = 0; i < w * h; i++) if(bg.lab[i] >= 0){ var c1 = bg.comps[bg.lab[i]]; if(!c1.border && c1.area < minA * 0.6) mask[i] = 1; }
+  var f2 = labelComps(mask, w, h, 1, true), comps = f2.comps.map(function(c, id){ c.id = id; return c; }).sort(function(a, b){ return b.area - a.area; }).slice(0, 140);
+  /* merge dots and accents with their letter */
+  var parent = {}; comps.forEach(function(c){ parent[c.id] = c.id; });
+  function find(a){ while(parent[a] !== a) a = parent[a]; return a; }
+  comps.forEach(function(a){ comps.forEach(function(b){
+    if(a.id >= b.id) return;
+    var ov = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0), mw = Math.min(a.x1 - a.x0, b.x1 - b.x0) + 1, gap = Math.max(a.y0, b.y0) - Math.min(a.y1, b.y1), mh = Math.max(a.y1 - a.y0, b.y1 - b.y0) + 1;
+    if(ov > 0.5 * mw && gap < 0.35 * mh && Math.min(a.area, b.area) < 0.35 * Math.max(a.area, b.area)) parent[find(a.id)] = find(b.id);
+  }); });
+  var groups = {}, gid = new Int32Array(f2.comps.length).fill(-1), list = [];
+  comps.forEach(function(c){ var r = find(c.id); if(!groups[r]){ groups[r] = {x0: c.x0, y0: c.y0, x1: c.x1, y1: c.y1, gi: list.length}; list.push(groups[r]); } var g = groups[r]; g.x0 = Math.min(g.x0, c.x0); g.y0 = Math.min(g.y0, c.y0); g.x1 = Math.max(g.x1, c.x1); g.y1 = Math.max(g.y1, c.y1); gid[c.id] = g.gi; });
+  var glab = new Int32Array(w * h).fill(-1);
+  for(i = 0; i < w * h; i++) if(f2.lab[i] >= 0) glab[i] = gid[f2.lab[i]];
+  list.forEach(function(g){ g.loops = traceLoops(glab, w, h, g.gi, g).map(function(l){ return simplifyLoop(smoothLoop(l, tp.soft), 0.45); }).filter(function(l){ return l.length > 3; }); });
+  list = list.filter(function(g){ return g.loops.length; });
+  /* reading order */
+  list.sort(function(a, b){ return a.y0 - b.y0; });
+  var rows = []; list.forEach(function(s){ var r = rows[rows.length - 1], cy = (s.y0 + s.y1) / 2; if(r && cy < r.y1) r.items.push(s); else rows.push({y1: s.y1, items: [s]}); });
+  shapes = []; rows.forEach(function(r, ri){ r.items.sort(function(a, b){ return a.x0 - b.x0; }).forEach(function(s){ s.row = ri; s.ch = ''; shapes.push(s); }); });
+  /* mask preview */
+  var cv = $('r-mask'); cv.width = w; cv.height = h; cv.hidden = false; var ctx = cv.getContext('2d'), im = ctx.createImageData(w, h);
+  for(i = 0; i < w * h; i++){ var on = glab[i] >= 0; im.data[4*i] = on ? 21 : 247; im.data[4*i+1] = on ? 23 : 247; im.data[4*i+2] = on ? 26 : 243; im.data[4*i+3] = 255; }
+  ctx.putImageData(im, 0, 0);
+  assignOrder(); renderShapes();
+}
+function updateCover(){
+  var box = $('r-cover'), have = shapes.map(function(s){ return s.ch; }).filter(function(c){ return /[a-z]/.test(c); }).join('');
+  if(!have){ box.hidden = true; return; }
+  var cov = coverage(have), built = cov.filter(function(c){ return have.indexOf(c) < 0; });
+  var gains = 'abcdefghijklmnopqrstuvwxyz'.split('').filter(function(c){ return cov.indexOf(c) < 0; }).map(function(c){ var g = coverage(have + c).filter(function(x){ return cov.indexOf(x) < 0; }); return {c: c, g: g}; }).sort(function(a, b){ return b.g.length - a.g.length; }).slice(0, 3);
+  box.hidden = false;
+  box.innerHTML = '<div class="bar" style="margin:0 0 6px"><b style="width:' + Math.round(cov.length / 26 * 100) + '%"></b></div><b>' + cov.length + ' minuscules sur 26 seront à ta main</b> : ' + esc(Array.from(have).join(' ')) + (built.length ? ' détourées, ' + esc(built.join(' ')) + ' construites' : ' détourées') + '. Les autres viendront de la police donneuse.' + (gains.length ? '<br>Pour en gagner le plus, ajoute : ' + gains.map(function(x){ return '<b>' + x.c + '</b> (+' + x.g.length + (x.g.length > 1 ? ' : ' + esc(x.g.join(' ')) : '') + ')'; }).join(', ') + '.' : '');
+}
+function assignOrder(){ var chars = Array.from($('r-order').value.replace(/\s/g, '')); shapes.forEach(function(s, i){ s.ch = chars[i] || ''; }); updateCover(); }
+function renderShapes(){
+  $('r-count').textContent = shapes.length + (shapes.length > 1 ? ' formes' : ' forme');
+  $('r-shapes').innerHTML = shapes.map(function(s, i){
+    var d = s.loops.map(function(l){ return 'M' + l.map(function(p){ return p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join('L') + 'Z'; }).join('');
+    return '<div class="shape"><svg viewBox="' + (s.x0 - 4) + ' ' + (s.y0 - 4) + ' ' + (s.x1 - s.x0 + 9) + ' ' + (s.y1 - s.y0 + 9) + '" role="img" aria-label="Forme ' + (i + 1) + '"><path fill-rule="evenodd" d="' + d + '"/></svg><input type="text" id="r-ch-' + i + '" data-i="' + i + '" maxlength="2" value="' + esc(s.ch) + '" aria-label="Lettre de la forme ' + (i + 1) + '" autocomplete="off" autocapitalize="off"></div>';
+  }).join('');
+  if(!shapes.length) setStatus($('r-status'), 'Aucune forme trouvée. Bouge le seuil ou change le réglage « Lettres ».', 'err'); else setStatus($('r-status'), '');
+}
+$('r-shapes').addEventListener('input', function(e){ var i = e.target.dataset.i; if(i !== undefined) shapes[+i].ch = Array.from(e.target.value.trim())[0] || ''; });
+$('r-shapes').addEventListener('input', function(){ updateCover(); });
+$('r-order').oninput = function(){ assignOrder(); shapes.forEach(function(s, i){ var el = $('r-ch-' + i); if(el) el.value = s.ch; }); };
+var TSL = [
+  {k: 'thr', box: 'r-sliders', label: 'Seuil', min: 0, max: 255, step: 1},
+  {k: 'blur', box: 'r-sliders', label: 'Lissage de l\'image', min: 0, max: 12, step: 1},
+  {k: 'clean', box: 'r-sliders', label: 'Nettoyage des petites taches (%)', min: 0, max: 15, step: 0.5},
+  {k: 'soft', box: 'r-sliders', label: 'Adoucir les contours', min: 0, max: 24, step: 1},
+  {k: 'size', box: 'r-sliders2', label: 'Taille des lettres (%)', min: 60, max: 140, step: 1},
+  {k: 'side', box: 'r-sliders2', label: 'Approches (blanc de chaque côté)', min: 0, max: 140, step: 1}
+];
+(function(){
+  $('r-sliders').innerHTML = '<label class="sl"><span>Lettres</span><select id="r-light"><option value="1">Claires sur fond foncé</option><option value="0">Foncées sur fond clair</option></select></label>';
+  $('r-sliders2').innerHTML = '<label class="sl"><span>Échelle</span><select id="r-scale"><option value="0">Commune à toute l\'image</option><option value="1">Lettre par lettre (recadrages séparés)</option></select></label>';
+  TSL.forEach(function(s){ $(s.box).insertAdjacentHTML('beforeend', '<label class="sl"><span>' + s.label + '<output id="ro-' + s.k + '"></output></span><input type="range" id="r-' + s.k + '" min="' + s.min + '" max="' + s.max + '" step="' + s.step + '"></label>'); });
+  TSL.forEach(function(s){ $('r-' + s.k).oninput = function(){ tp[s.k] = parseFloat(this.value); $('ro-' + s.k).textContent = this.value; if(s.box === 'r-sliders'){ clearTimeout(tpT); tpT = setTimeout(processTrace, 140); } }; });
+  $('r-light').onchange = function(){ tp.light = +this.value; processTrace(); };
+  $('r-scale').onchange = function(){ tp.scale = +this.value; };
+})();
+function syncTrace(){ $('r-light').value = tp.light; $('r-scale').value = tp.scale; TSL.forEach(function(s){ $('r-' + s.k).value = tp[s.k]; $('ro-' + s.k).textContent = tp[s.k]; }); }
+function setTrace(f){
+  var st = $('r-status');
+  if(!f || !/^image\//.test(f.type)){ setStatus(st, 'Ce fichier n\'est pas une image.', 'err'); return; }
+  var img = new Image(), url = URL.createObjectURL(f);
+  img.onload = function(){
+    traceFile = f; traceBase = grayFromImage(img); URL.revokeObjectURL(url);
+    var w = traceBase.w, h = traceBase.h, G = blurGray(traceBase.g, w, h, 2), t = otsu(G), on = 0, n = 0, x, y;
+    for(x = 0; x < w; x++){ on += (G[x] > t) + (G[(h - 1) * w + x] > t); n += 2; }
+    for(y = 0; y < h; y++){ on += (G[y * w] > t) + (G[y * w + w - 1] > t); n += 2; }
+    tp.light = on / n > 0.5 ? 0 : 1;
+    tp.thr = t; $('r-order').value = '';
+    $('r-hint').hidden = true; $('r-controls').hidden = false; syncTrace(); processTrace();
+  };
+  img.onerror = function(){ URL.revokeObjectURL(url); setStatus(st, 'Image illisible. Essaie un JPG ou un PNG.', 'err'); };
+  img.src = url;
+}
+$('r-pick').onclick = function(){ $('r-file').click(); };
+$('r-file').onchange = function(e){ if(e.target.files[0]) setTrace(e.target.files[0]); };
+(function(){ var d = $('r-drop');
+  ['dragenter', 'dragover'].forEach(function(n){ d.addEventListener(n, function(e){ e.preventDefault(); d.classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function(n){ d.addEventListener(n, function(e){ e.preventDefault(); d.classList.remove('over'); }); });
+  d.addEventListener('drop', function(e){ var f = e.dataTransfer && e.dataTransfer.files[0]; if(f) setTrace(f); });
+})();
+$('r-read').onclick = async function(){
+  var st = $('r-status'), btn = this, sample = await getSample();
+  if(!sample || !traceFile){ setStatus(st, NO_AI, 'err'); return; }
+  var lim = await sample.limits().catch(function(){ return null; });
+  if(!lim || !lim.images){ setStatus(st, errMsg({code: 'images_unavailable'}), 'err'); return; }
+  btn.disabled = true; setStatus(st, 'Lecture des lettres', 'busy');
+  try {
+    var r = await sample.json("Lis les caractères visibles dans l'image jointe, dans l'ordre de lecture (de gauche à droite, ligne par ligne), en respectant majuscules et minuscules. Réponds uniquement avec un objet JSON : {\"lettres\":\"abc\"} sans espaces.", {images: [traceFile], modelTier: 'quick'});
+    $('r-order').value = String((r && r.lettres) || '').replace(/\s/g, ''); $('r-order').oninput();
+    setStatus(st, 'Lettres proposées par l\'IA : vérifie sous chaque forme et corrige si besoin.');
+  } catch(e){ setStatus(st, errMsg(e), 'err'); }
+  finally { btn.disabled = false; }
+};
+function expectH(ch){ return /[A-Zbdfhklt0-9]/.test(ch) ? 700 : /[acemnorsuvwxz]/.test(ch) ? 490 : /[gpqy]/.test(ch) ? 700 : 0; }
+function median(a){ a = a.slice().sort(function(x, y){ return x - y; }); return a.length ? a[(a.length - 1) >> 1] : 0; }
+function tracedGlyphes(){
+  var st = $('r-status'), used = shapes.filter(function(s){ return s.ch; });
+  if(!used.length){ setStatus(st, 'Indique au moins une lettre sous une forme (ou remplis le champ « Lettres, dans l\'ordre de lecture »).', 'err'); return null; }
+  var own = function(ch){ return /[A-Za-z0-9.]/.test(ch) && !/[gjpqyQ]/.test(ch); };
+  var rowBase = {}; shapes.forEach(function(s){ (rowBase[s.row] = rowBase[s.row] || {o: [], a: []}).a.push(s.y1 + 1); if(s.ch && own(s.ch)) rowBase[s.row].o.push(s.y1 + 1); });
+  var ks = used.map(function(s){ var e = expectH(s.ch); return e ? e / (s.y1 - s.y0 + 1) : 0; }).filter(Boolean);
+  var maxH = Math.max.apply(null, used.map(function(s){ return s.y1 - s.y0 + 1; })), kAll = (ks.length ? median(ks) : 700 / maxH), glyphes = {};
+  used.forEach(function(s){
+    var e = expectH(s.ch), k = ((tp.scale && e) ? e / (s.y1 - s.y0 + 1) : kAll) * tp.size / 100, rb = rowBase[s.row];
+    var base = own(s.ch) ? s.y1 + 1 : median(rb.o.length ? rb.o : rb.a);
+    glyphes[s.ch] = {w: Math.round((s.x1 - s.x0 + 1) * k + 2 * tp.side), p: s.loops.map(function(l){ return l.map(function(p){ return [Math.round((p[0] - s.x0) * k + tp.side), Math.round((base - p[1]) * k)]; }); })};
+  });
+  return glyphes;
+}
+function openAtelier(msg){
+  fontIsExample = false; cache = {}; $('fname').value = font.nom; setStatus($('dev-status'), msg);
+  save(); location.hash = '#creation'; setTimeout(function(){ $('atelier').scrollIntoView({block: 'start'}); }, 60);
+}
+$('r-build').onclick = function(){
+  var glyphes = tracedGlyphes(); if(!glyphes) return;
+  font = prep({nom: 'Police détourée', categorie: 'Depuis une image', description: 'Lettres détourées depuis une image : ' + Object.keys(glyphes).join(' '), source: 'image', metriques: {cap: 700, x: 490, asc: 750, desc: -220}, glyphes: glyphes});
+  missing = GROUPS.slice(); $('try').value = Object.keys(glyphes).join('');
+  openAtelier('Lettres détourées chargées. Tu peux télécharger la police telle quelle, ou faire dessiner les glyphes manquants par l\'IA.');
+};
+var lastTraced = null;
+/* what was measured on the traced letters and carried over to the donor, in plain words */
+function styleNote(Y){
+  if(!Y) return '';
+  var t = [], h = Y.th[0], v = Y.th[STB / 2];
+  if(Y.wa) t.push('irrégularité du contour (' + String(Y.wa).replace('.', ',') + ' unités)');
+  if(Y.th.some(function(x){ return x; })) t.push(Math.abs(v - h) >= 3 ? (v > h ? 'traits horizontaux renforcés' : 'traits verticaux renforcés') : 'épaisseur du trait');
+  if(Y.sl) t.push('inclinaison (' + (Y.sl > 0 ? '+' : '') + Math.round(Math.atan(Y.sl) * 180 / Math.PI) + '°)');
+  if(Y.f) t.push('déformation d\'ensemble des formes');
+  if(!t.length) return 'Aucun trait de style mesurable à reporter sur la donneuse avec ces lettres.';
+  return 'Caractère de tes lettres reporté sur la donneuse : ' + t.join(', ') + (Y.gain && Y.gain[1] > Y.gain[0] ? ' (recouvrement mesuré : ' + String(Y.gain[0]).replace('.', ',') + ' % puis ' + String(Y.gain[1]).replace('.', ',') + ' %)' : '') + '. Curseur « caractère de tes lettres » pour doser.';
+}
+$('r-match').onclick = async function(){
+  var glyphes = tracedGlyphes(); if(!glyphes) return;
+  var hz = tp.scale ? 1 : harmonize(glyphes, tp.side);
+  var st = $('r-status'), btn = this; btn.disabled = true; setStatus(st, 'Chargement de la bibliothèque et premier tri par silhouette', 'busy');
+  try {
+    await loadLib();
+    var tc = getComp(prep({glyphes: glyphes})), tcl = {}; Object.keys(glyphes).forEach(function(k){ if(tc[k] && tc[k].polys.length) tcl[k] = tc[k]; });
+    var rank = coarseRank(IDX.bits, IDX.fonts.length, tcl), cand = [];
+    if(rank) cand = rank.slice(0, FINE).map(function(r){ return IDX.fonts[r[0]][0]; });
+    else for(var ci = 0; ci < FINE; ci++) cand.push(IDX.fonts[Math.floor(ci * IDX.fonts.length / FINE)][0]);
+    setStatus(st, 'Mesure fine des ' + cand.length + ' polices les plus proches parmi ' + IDX.fonts.length, 'busy');
+    await ensureFonts(cand);
+    var res = cand.map(function(id){ return LIBMAP[id]; }).filter(Boolean).map(function(L){ return {L: L, s: scoreLib(L, tcl)}; }).sort(function(a, b){ return b.s - a.s; }).slice(0, 12), word = Object.keys(tcl).join('').slice(0, 6) + ' Hamburg';
+    lastTraced = {g: glyphes, tcl: tcl};
+    $('r-matches').innerHTML = res.map(function(r){
+      var tmp = prep({glyphes: {}, donneur: {id: r.L.id, sx: 1, d: 0, r: 0, xD: 500, aD: 700, xT: 500, aT: 700, xh: 100}});
+      return '<article class="card"><div class="row" style="justify-content:space-between"><h4>' + esc(r.L.nom) + ' ' + r.L.graisse + '</h4><span class="score">' + Math.round(r.s * 100) + ' %</span></div><div class="bar"><b style="width:' + Math.round(r.s * 100) + '%"></b></div><div class="spec">' + textSVG(tmp, word, 46, false) + '</div><p>' + esc(r.L.cat) + '</p><button type="button" class="ghost" data-don="' + esc(r.L.id) + '">Reconstruire avec cette structure</button></article>';
+    }).join('');
+    $('r-libcount').textContent = IDX.fonts.length + ' polices comparées, ' + cand.length + ' mesurées finement'; $('r-matchbox').hidden = false;
+    setStatus(st, (hz !== 1 ? 'Tes lettres n\'étaient pas à la même échelle dans l\'image : les petites lettres ont été ramenées à la hauteur de la panse du b (×' + hz.toFixed(2) + '). ' : '') + 'Classement mesuré : pourcentage de recouvrement entre tes lettres et celles de chaque police. Choisis une structure.');
+    $('r-matchbox').scrollIntoView({behavior: 'smooth', block: 'start'});
+  } catch(e){ setStatus(st, 'La bibliothèque de polices n\'a pas pu être chargée. Recharge la page et réessaie.', 'err'); }
+  finally { btn.disabled = false; }
+};
+$('r-matches').addEventListener('click', function(e){
+  var b = e.target.closest('[data-don]'); if(!b || !lastTraced) return;
+  var L = LIBMAP[b.dataset.don], P = fitDonor(L, lastTraced.tcl); P.id = L.id; P.xh = 100; P.sty = measureStyle(L, lastTraced.tcl, P); P.st = 100;
+  var gl = {}, der = {}, lowest = -220;
+  Object.keys(lastTraced.g).forEach(function(k){ gl[k] = lastTraced.g[k]; });
+  if($('r-derive').checked){
+    der = deriveGlyphes(lastTraced.g, P.xT); Object.keys(der).forEach(function(k){ gl[k] = der[k]; });
+    var di = adapt(L, 'i', donorP({donneur: P})), dot = null;
+    if(di){ var dpp = di.polys.filter(function(p){ return pbox([p]).y0 > P.xT * 0.6; }), dst = di.polys.filter(function(p){ return pbox([p]).y0 <= P.xT * 0.6; }); if(dpp.length && dst.length) dot = {polys: dpp, stem: pbox(dst)}; }
+    var asm = assembleGlyphes(gl, P.xT, dot); Object.keys(asm).forEach(function(k){ gl[k] = der[k] = asm[k]; });
+  }
+  var dk = Object.keys(der); dk.forEach(function(k){ lowest = Math.min(lowest, pbox(der[k].p).y0 - 20); });
+  font = prep({nom: 'VIEWZ Reconstruite', categorie: L.cat, description: 'Alphabet reconstruit sur la structure de ' + L.nom + ' ' + L.graisse + ', ajusté par mesure. Lettres détourées : ' + Object.keys(lastTraced.g).join(' ') + (dk.length ? '. Lettres construites à partir des tiennes : ' + dk.join(' ') : ''), source: 'image', metriques: {cap: 700, x: P.xT, asc: Math.max(750, P.aT + 30), desc: Math.max(-380, lowest)}, glyphes: gl, donneur: P});
+  missing = []; $('try').value = dk.length ? Object.keys(gl).join('') + ' déjà plié, à l\'âge doublé' : 'Portez ce vieux whisky au juge blond qui fume';
+  openAtelier((dk.length ? 'Lettres construites à partir des tiennes : ' + dk.join(', ') + '. ' : '') + 'Alphabet reconstruit par calcul. ' + styleNote(P.sty) + ' Les curseurs « Donneuse » règlent l\'ajustement trouvé automatiquement.');
+});
+$('r-find').onclick = function(){ if(traceFile){ setShot(traceFile); location.hash = '#recherche'; } };
+
+/* ---- persistence ---- */
+function strip(s){ return {nom: s.nom, categorie: s.categorie, description: s.description, plume: s.plume, inclinaison: s.inclinaison, espacement: s.espacement, graisse: s.graisse, source: s.source, donneur: s.donneur, metriques: s.metriques, glyphes: s.glyphes}; }
+function state(){ return {v: 1, pistes: pistesAreExamples ? null : pistes.map(strip), font: fontIsExample ? null : strip(font), tr: $('try').value, sel: sel, pre: $('precisions').value, mot: $('mot').value}; }
+function save(){ try { localStorage.setItem('viewz-type-v1', JSON.stringify(state())); } catch(e){} }
+function restore(s){
+  if(!s || s.v !== 1) return;
+  try {
+    if(Array.isArray(s.pistes) && s.pistes.length){ pistes = s.pistes.map(prep); pistesAreExamples = false; }
+    if(s.font){ font = prep(s.font); fontIsExample = false; }
+    if(typeof s.tr === 'string') $('try').value = s.tr;
+    if(typeof s.pre === 'string') $('precisions').value = s.pre;
+    if(typeof s.mot === 'string' && s.mot) $('mot').value = s.mot;
+    if(s.sel) Object.keys(sel).forEach(function(g){ if(Array.isArray(s.sel[g])) sel[g] = s.sel[g].filter(function(n){ return CHIPS[g].indexOf(n) >= 0; }); Array.from($('c-' + g).children).forEach(function(c){ c.setAttribute('aria-pressed', sel[g].indexOf(c.textContent) >= 0 ? 'true' : 'false'); }); });
+  } catch(e){}
+}
+function aiSettings(){
+  if(inClaude()) return;
+  var c = apiConf(), st = $('ai-status'), show = function(){ var k = apiConf(); setStatus(st, k ? 'IA activée avec ta clé (modèle : ' + (k.model || 'claude-sonnet-5-5') + ').' : 'Aucune clé enregistrée : mode sans IA.'); };
+  $('ai-box').hidden = false; $('ai-model').value = (c && c.model) || ''; show();
+  $('ai-save').onclick = function(){
+    var k = $('ai-key').value.trim(), m = $('ai-model').value.trim(), old = apiConf();
+    if(!k && !old){ setStatus(st, 'Colle d\'abord ta clé d\'API.', 'err'); return; }
+    try { localStorage.setItem(KEYK, JSON.stringify({key: k || old.key, model: m})); $('ai-key').value = ''; show(); } catch(e){ setStatus(st, 'Ce navigateur refuse l\'enregistrement local. La clé n\'a pas été gardée.', 'err'); }
+  };
+  $('ai-clear').onclick = function(){ try { localStorage.removeItem(KEYK); } catch(e){} $('ai-key').value = ''; show(); };
+}
+function start(snap){
+  aiSettings();
+  var s = (snap && snap.v) ? snap : null;
+  if(!s){ try { s = JSON.parse(localStorage.getItem('viewz-type-v1') || 'null'); } catch(e){ s = null; } }
+  $('try').value = 'VIEWZ';
+  restore(s);
+  $('fname').value = font.nom;
+  buildSliders(); updateBrief();
+  renderMatches(EXAMPLE_MATCHES, 'Typographie', 400, false);
+  route();
+}
+var hot = window.claude && window.claude.hot;
+if(hot && hot.snapshot) hot.snapshot(state);
+if(hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {});
+</script>
+</body>
+</html>
