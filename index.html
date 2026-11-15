@@ -205,13 +205,14 @@ footer{margin-top:40px;padding-top:12px;border-top:1px solid var(--line);font:40
       <div class="group"><strong>Ambiance</strong><div class="chips" id="c-ambiance"></div></div>
       <div class="row" style="align-items:flex-start">
         <label class="f" style="flex:2 1 300px">Tes précisions (facultatif)
-          <textarea id="precisions" placeholder="Ex. une gothique moderne pour une marque de streetwear, lisible en petit, avec des terminaisons en biseau"></textarea>
+          <textarea id="precisions" placeholder="Ex. une gothique pour une marque de streetwear, lisible en petit, un peu penchée, contour irrégulier"></textarea>
         </label>
         <label class="f" style="flex:1 1 160px">Mot d'essai des pistes
           <input type="text" id="mot" value="VIEWZ" maxlength="14" autocomplete="off">
         </label>
       </div>
       <div class="brief" id="brief"></div>
+      <div id="brief-lu" style="font-size:13px;color:var(--muted);max-width:80ch" hidden></div>
       <div class="row">
         <button class="accent" id="gen" type="button">Générer 4 pistes</button>
         <button class="ghost" id="gen-ai" type="button">Dessiner 4 pistes avec l'IA</button>
@@ -1190,7 +1191,118 @@ function briefText(){
   var p = $('precisions').value.trim(); if(p) parts.push('Précisions : ' + p);
   return parts.join('\n');
 }
-function updateBrief(){ $('brief').textContent = briefText(); }
+/*BRIEF-START*/
+/* ---- the written precisions of the brief, read by code (no AI) ----
+   A lexicon of French (and a few English) words. Each entry either points to a family, an ambiance,
+   or an adjustment of the piste. A word that follows a negation ("pas trop gras", "sans arrondi") is set aside. */
+var LEX = [
+  {re: /\b(?:peu de contraste|peu contraste\w*|sans contraste|faible contraste|monolineaires?|trait constant)\b/g, adj: 'con', v: -1, lab: 'contraste réduit', raw: 1},
+  {re: /\b(?:sans serifs?|sans empattements?|lineales?|grotesques?|caracteres? batons?)\b/g, fam: 'Linéale', raw: 1},
+  {re: /\b(?:art deco|annees (?:20|30|vingt|trente)|gatsby)\b/g, fam: 'Art déco'},
+  {re: /\b(?:geometriques?|bauhaus)\b/g, fam: 'Géométrique'},
+  {re: /\b(?:mecanes?|slabs?|egyptiennes?|western|far west)\b/g, fam: 'Mécane'},
+  {re: /\b(?:didones?|bodoni|didot|fashion|magazine de mode)\b/g, fam: 'Didone'},
+  {re: /\b(?:gothiques?|fraktur|textura|blackletter|rotunda|medievale?s?|medievaux|moyen age)\b/g, fam: 'Médiévale gothique'},
+  {re: /\b(?:onciales?|celtiques?|celtes?|irlandaise?s?)\b/g, fam: 'Onciale'},
+  {re: /\b(?:chancelieres?|chancellerie|calligraphie anglaise|anglaises?|copperplate|faire part|mariages?|scripts?)\b/g, fam: 'Chancelière'},
+  {re: /\b(?:manuscrite?s?|ecriture a la main|ecrite? a la main|handwriting|stylo|feutre|crayon)\b/g, fam: 'Manuscrite'},
+  {re: /\b(?:pinceaux?|brush)\b/g, fam: 'Pinceau'},
+  {re: /\b(?:graffitis?|tags?|wildstyle|throw ?up|bombe)\b/g, fam: 'Graffiti'},
+  {re: /\b(?:stencils?|pochoirs?|militaires?)\b/g, fam: 'Stencil'},
+  {re: /\b(?:monospace|mono|machine a ecrire|chasse fixe|terminal|code informatique)\b/g, fam: 'Monospace'},
+  {re: /\b(?:a empattements?|avec empattements?|empattements?|serifs?|garamond|romaines?|litteraires?)\b/g, fam: 'Empattements'},
+  {re: /\b(?:streetwear|street|urbaine?s?|urbains|hip hop|rap|skate\w*|rue)\b/g, mood: 'Urbaine'},
+  {re: /\b(?:luxe|luxueu\w+|haut de gamme|premium|joaillerie|bijou\w*|parfum\w*|prestige|haute couture)\b/g, mood: 'Luxe'},
+  {re: /\b(?:elegan\w+|raffinee?s?|chic|delicate?s?|sophistiquee?s?|gracieu\w+)\b/g, mood: 'Élégante'},
+  {re: /\b(?:brute?s?|brutale?s?|agressi\w+|puissante?s?|violente?s?|metal|tatouages?|tattoo|rock|punk|hardcore)\b/g, mood: 'Brute'},
+  {re: /\b(?:organiques?|nature|naturelle?s?|bio|vegetale?s?|artisanale?s?|chaleureu\w+)\b/g, mood: 'Organique'},
+  {re: /\b(?:futuris\w+|tech|techno\w*|sci fi|science fiction|numeriques?|digitale?s?|gaming|cyber\w*|robot\w*|modernes?|contemporaine?s?)\b/g, mood: 'Futuriste'},
+  {re: /\b(?:retro|vintage|annees (?:50|60|70|80|cinquante|soixante|soixante dix|quatre vingt)|anciens?|anciennes?|nostalgi\w+|old school)\b/g, mood: 'Rétro'},
+  {re: /\b(?:ludiques?|enfants?|enfantine?s?|fun|joyeu\w+|jeux?|jouets?|rigolo\w*|amusante?s?|comics?)\b/g, mood: 'Ludique'},
+  {re: /\b(?:sacree?s?|religieu\w+|eglise|liturgi\w+|spirituel\w*|mysti\w+|fantasy|grimoires?|sortileges?|feeri\w+|magi\w+|esoteri\w+)\b/g, mood: 'Sacrée'},
+  {re: /\b(?:grande hauteur d x|minuscules hautes|gros oeil)\b/g, adj: 'xh', v: 12, lab: 'hauteur d\'x relevée'},
+  {re: /\b(?:petite hauteur d x|petit oeil|ascendantes? longues?|elancee?s?)\b/g, adj: 'xh', v: -10, lab: 'hauteur d\'x abaissée'},
+  {re: /\b(?:lisib\w+ en petite?s?(?: tailles?| corps)?|petites? tailles?|petits? corps|texte courant|lisib\w+)\b/g, adj: 'lis', v: 1, lab: 'hauteur d\'x relevée, lettres plus espacées'},
+  {re: /\b(?:pleins et delies|contrastee?s?|fort contraste)\b/g, adj: 'con', v: 1, lab: 'contraste accentué'},
+  {re: /\b(?:gras|grasses?|bold|epaisses?|epais|lourde?s?|massi\w+|noire?s?|black|costaude?s?)\b/g, adj: 'w', v: 1, lab: 'graisse forte'},
+  {re: /\b(?:fine?s?|legere?s?|legers?|light|maigres?|filiformes?)\b/g, adj: 'w', v: -1, lab: 'graisse légère'},
+  {re: /\b(?:etroite?s?|condensee?s?|compressee?s?)\b/g, adj: 'sx', v: -1, lab: 'chasse resserrée'},
+  {re: /\b(?:larges?|etendue?s?|extended|amples?)\b/g, adj: 'sx', v: 1, lab: 'chasse élargie'},
+  {re: /\b(?:espacee?s?|aeree?s?|interlettrage large|tracking)\b/g, adj: 'esp', v: 40, lab: 'lettres espacées'},
+  {re: /\b(?:serree?s?|compacte?s?|denses?)\b/g, adj: 'esp', v: -14, lab: 'lettres serrées'},
+  {re: /\b(?:italiques?|penchee?s?|inclinee?s?|obliques?|dynamiques?|vitesse|sporti\w+|sport|rapides?)\b/g, adj: 'inc', v: 10, lab: 'inclinaison'},
+  {re: /\b(?:arrondie?s?|ronde?s?|bulles?|soft|moelleu\w+)\b/g, adj: 'r', v: 14, lab: 'angles arrondis'},
+  {re: /\b(?:(?:contours? )?irreguli\w+|tremblee?s?|fait main|faite? a la main|usee?s?|abimee?s?|grunge|erodee?s?|texturee?s?|tampon|vieillie?s?|imparfaite?s?)\b/g, adj: 'wa', v: 5, lab: 'contour irrégulier'}
+];
+var NOISE = /^(?:pour|avec|dans|une?|des?|les?|la|du|aux?|et|ou|en|sur|qui|que|est|sont|soit|mais|donc|car|par|mon|ma|mes|son|sa|ses|notre|nos|votre|vos|leurs?|cette|cet|ces|tout|toute|tous|toutes|tres|trop|plus|moins|peu|pas|sans|non|comme|esprit|style|genre|type|typo|typographies?|polices?|caracteres?|lettres?|lettrage|logos?|marques?|projets?|faire|fait|avoir|etre|veux|voudrais|aimerais|quelque|chose|bien|assez|plutot|vraiment|aussi|entre|vers|chez|ainsi|alors|meme|petite?s?|grande?s?|titres?|textes?|taille|ultra|extra|super|hyper|legerement|exemple)$/;
+function normText(s){ return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/œ/g, 'oe').replace(/æ/g, 'ae').replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim(); }
+/* Returns {fams, moods, fonts, w, sx, xh, esp, inc, r, wa, con, seen: [labels understood], out: [words set aside by a negation], rest: [words not recognised]} */
+function readPrecisions(text){
+  var R = {fams: [], moods: [], fonts: [], w: 0, sx: 0, xh: 0, esp: 0, inc: 0, r: 0, wa: 0, con: 0, seen: [], out: [], rest: []};
+  var raw = String(text || ''), t = normText(raw); if(!t) return R;
+  var orig = {}; raw.split(/[^A-Za-zÀ-ÿœŒ0-9]+/).forEach(function(w){ var k = normText(w); if(k && !orig[k]) orig[k] = w.toLowerCase(); });
+  var say = function(w){ return w.split(' ').map(function(x){ return orig[x] || x; }).join(' '); };
+  var add = function(a, v){ if(a.indexOf(v) < 0) a.push(v); }, blank = function(i, n){ t = t.slice(0, i) + new Array(n + 1).join('#') + t.slice(i + n); };
+  /* a reference font named in full : it comes first among the pistes */
+  var names = {}; Object.keys(REFS).forEach(function(f){ REFS[f].forEach(function(n){ names[n] = 1; }); });
+  Object.keys(names).sort(function(a, b){ return b.length - a.length; }).forEach(function(n){
+    var k = normText(n), i = (' ' + t + ' ').indexOf(' ' + k + ' ');
+    if(i < 0) return;
+    /* a one-word name that is also a common word ("Forum", "Inter") counts only when written with its capital */
+    if(k.indexOf(' ') < 0 && !new RegExp('(^|[^A-Za-zÀ-ÿ])' + n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[^A-Za-zÀ-ÿ])').test(raw)) return;
+    add(R.fonts, n); R.seen.push('police ' + n); blank(i, k.length);
+  });
+  LEX.forEach(function(E){
+    var m; E.re.lastIndex = 0;
+    while((m = E.re.exec(t))){
+      var before = t.slice(0, m.index).replace(/\s+/g, ' '), word = say(m[0]), len = m[0].length;
+      var neg = !E.raw && /(?:^| )(?:pas|sans|ni|non|jamais|eviter|evite|aucune?|moins)(?: (?:de|d|trop|tres|du|des|l|la|le|les|une?|si|vraiment))* $/.test(before);
+      var g = /(?:^| )(?:tres|ultra|extra|super|hyper|vraiment|fortement) $/.test(before) ? 1.5 : /(?:^| )(?:un peu|legerement|assez|plutot|discretement|a peine) $/.test(before) ? 0.5 : 1;
+      blank(m.index, len);
+      if(neg){ add(R.out, word); continue; }
+      if(E.fam){ add(R.fams, E.fam); add(R.seen, word + ' (famille ' + E.fam.toLowerCase() + ')'); }
+      else if(E.mood){ add(R.moods, E.mood); add(R.seen, word + ' (ambiance ' + E.mood.toLowerCase() + ')'); }
+      else {
+        if(E.adj === 'w') R.w = E.v > 0 ? (g > 1 ? 900 : g < 1 ? 600 : 700) : (g < 1 ? 300 : 200);
+        else if(E.adj === 'sx') R.sx = E.v > 0 ? 1 + 0.22 * g : 1 - 0.18 * Math.min(g, 1.25);
+        else if(E.adj === 'lis'){ R.xh += 8; R.esp += 14; }
+        else if(E.adj === 'con') R.con = E.v * g;
+        else R[E.adj] += E.v * g;
+        add(R.seen, word === E.lab ? word : word + ' (' + E.lab + ')');
+      }
+    }
+  });
+  R.xh = clamp(Math.round(R.xh), -20, 20, 0); R.esp = clamp(Math.round(R.esp), -30, 80, 0); R.inc = clamp(Math.round(R.inc), 0, 18, 0); R.r = clamp(Math.round(R.r), 0, 26, 0); R.wa = clamp(Math.round(R.wa * 10) / 10, 0, 9, 0); R.con = clamp(R.con, -1.5, 1.5, 0);
+  t.split(' ').forEach(function(w){ if(w.length > 3 && w.indexOf('#') < 0 && !NOISE.test(w) && !/^\d+$/.test(w)) add(R.rest, say(w)); });
+  return R;
+}
+/* the adjustments of the precisions that do not already come from the chips, applied to one piste (donor parameters and spec) */
+function applyPrecisions(p, R){
+  var D = p.donneur, notes = [];
+  if(R.xh){ D.xh = clamp(100 + R.xh, 70, 130, 100); notes.push(R.xh > 0 ? 'hauteur d\'x relevée' : 'hauteur d\'x abaissée'); }
+  if(R.r){ D.r = R.r; notes.push('angles arrondis'); }
+  if(R.esp){ p.espacement = R.esp; notes.push(R.esp > 0 ? 'lettres espacées' : 'lettres serrées'); }
+  if(R.inc){ p.inclinaison = R.inc; notes.push('inclinaison'); }
+  if(R.wa || R.con){
+    var a = Math.round(7 * R.con), th = [a, a, 0, -a, -a, -a, 0, a];
+    D.sty = {th: th, sl: 0, wa: R.wa, f: null, gain: null}; D.st = 100;
+    if(R.con) notes.push(R.con > 0 ? 'contraste accentué' : 'contraste réduit'); if(R.wa) notes.push('contour irrégulier');
+  }
+  return notes;
+}
+function precisionsNote(R, short){
+  var s = [];
+  if(R.seen.length) s.push((short ? 'Lu par le code, sans IA : ' : 'Précisions lues par le code : ') + R.seen.join(', ') + '.');
+  if(R.out.length) s.push('Écarté à ta demande : ' + R.out.join(', ') + '.');
+  if(R.rest.length) s.push('Mots sans effet sur le calcul : ' + R.rest.slice(0, 8).join(', ') + (R.rest.length > 8 ? '…' : '') + '.');
+  return s.join(' ');
+}
+/*BRIEF-END*/
+function updateBrief(){
+  $('brief').textContent = briefText();
+  var p = $('precisions').value.trim(), lu = $('brief-lu'), n = p ? precisionsNote(readPrecisions(p), true) : '';
+  lu.hidden = !n; lu.textContent = n;
+}
 $('precisions').oninput = updateBrief;
 
 var RULES = [
@@ -1245,7 +1357,7 @@ var SLIDERS = [
   {k: 'dd', label: 'Donneuse : graisse', min: -70, max: 130, step: 1, don: 1, get: function(){ return font.donneur ? font.donneur.d : 0; }, set: function(v){ if(font.donneur) font.donneur.d = v; }},
   {k: 'dsx', label: 'Donneuse : largeur', min: 0.55, max: 1.8, step: 0.01, don: 1, get: function(){ return font.donneur ? font.donneur.sx : 1; }, set: function(v){ if(font.donneur) font.donneur.sx = v; }},
   {k: 'dxh', label: 'Donneuse : hauteur d\'x (%)', min: 70, max: 130, step: 1, don: 1, get: function(){ return font.donneur ? font.donneur.xh : 100; }, set: function(v){ if(font.donneur) font.donneur.xh = v; }},
-  {k: 'dst', label: 'Donneuse : caractère de tes lettres (%)', min: 0, max: 150, step: 5, don: 1, get: function(){ return font.donneur ? font.donneur.st : 0; }, set: function(v){ if(font.donneur) font.donneur.st = v; }},
+  {k: 'dst', label: 'Donneuse : caractère reporté (%)', min: 0, max: 150, step: 5, don: 1, get: function(){ return font.donneur ? font.donneur.st : 0; }, set: function(v){ if(font.donneur) font.donneur.st = v; }},
   {k: 'dmix', label: 'Croisement : part de la seconde structure (%)', min: 0, max: 100, step: 5, don: 1, mix: 1, get: function(){ return font.donneur && font.donneur.mix ? font.donneur.mix.t : 0; }, set: function(v){ if(font.donneur && font.donneur.mix) font.donneur.mix.t = v; }},
   {k: 'dr', label: 'Donneuse : arrondi des angles', min: 0, max: 40, step: 1, don: 1, get: function(){ return font.donneur ? font.donneur.r : 0; }, set: function(v){ if(font.donneur) font.donneur.r = v; }},
   {k: 'taille', label: 'Taille d\'aperçu (px)', min: 28, max: 200, step: 2, get: function(){ return view.size; }, set: function(v){ view.size = v; }}
@@ -1337,7 +1449,7 @@ var TAGS = {
 function moodsOf(nom, moods){ var t = TAGS[nom] || ''; return moods.filter(function(m){ return t.indexOf(MOODS[m]) >= 0; }); }
 /* four reference fonts for the brief : inside each family, the fonts that carry the ambiances asked for come first (most ambiances first).
    Returns {picks: [{e, fam, hit}], missed: [families without any font labelled for these ambiances]} */
-function pickRefs(fams, moods, want, round){
+function pickRefs(fams, moods, want, round, first){
   var all = Object.keys(REFS), have = function(n){ return !!refEntry(n, want); }, auto = !fams.length;
   var listOf = function(fam){
     var refs = REFS[fam].filter(have), hit = moods.length ? refs.filter(function(n){ return moodsOf(n, moods).length; }) : [];
@@ -1350,7 +1462,9 @@ function pickRefs(fams, moods, want, round){
     lists = []; for(var k = 0; k < 4 && k < cand.length; k++) lists.push(cand[(round * 4 + k * (moods.length ? 1 : 3) + (moods.length ? 0 : 1)) % cand.length]);
   } else lists = fams.map(listOf);
   var picks = [], used = {};
-  for(var i = 0; i < 4; i++){
+  /* fonts named in the written precisions come first, whatever the family asked for */
+  (first || []).forEach(function(nom){ var e = refEntry(nom, want), fam = all.filter(function(f){ return REFS[f].indexOf(nom) >= 0; })[0]; if(e && fam && !used[nom] && picks.length < 4){ used[nom] = 1; picks.push({e: e, fam: fam, hit: moodsOf(nom, moods), named: true}); } });
+  for(var i = 0; picks.length < 4 && i < 8; i++){
     var l = lists[i % lists.length], turn = Math.floor(i / lists.length) + round;
     for(var j = 0; j < l.list.length; j++){ var nom = l.list[(turn + j) % l.list.length]; if(!used[nom]){ used[nom] = 1; picks.push({e: refEntry(nom, want), fam: l.fam, hit: moodsOf(nom, moods)}); break; } }
   }
@@ -1363,7 +1477,7 @@ function refEntry(nom, want){
   IDX.fonts.forEach(function(f){ if(f[1] === nom && (!best || Math.abs(f[2] - want) < Math.abs(best[2] - want))) best = f; });
   return best;
 }
-function pisteFrom(L, label, letter, want, sx, hit){
+function pisteFrom(L, label, letter, want, sx, hit, R){
   var lg = function(c){ return libGlyph(L, c); }, lx = topOf(lg, 'x') || topOf(lg, XL), la = topOf(lg, 'l') || topOf(lg, AL), lc = topOf(lg, 'H') || topOf(lg, CL_);
   if(!isFinite(lx)) lx = isFinite(lc) ? lc * 0.7 : 500; if(!isFinite(la)) la = isFinite(lc) ? lc : lx * 1.4; if(!(la > lx + 20)) la = lx + 20; if(!isFinite(lc)) lc = la;
   /* what the real font cannot give (no such weight in the library) is added by measure : kept moderate so that counters stay open */
@@ -1371,8 +1485,10 @@ function pisteFrom(L, label, letter, want, sx, hit){
   if(Math.abs(d) < 5) d = 0;
   if(d) adj.push(d > 0 ? 'graisse renforcée' : 'graisse allégée');
   if(sx !== 1) adj.push(sx < 1 ? 'chasse resserrée' : 'chasse élargie');
-  return prep({nom: label + ' ' + letter, categorie: label, description: 'Construite sur la structure de ' + L.nom + ' ' + L.graisse + ', police libre sous licence OFL' + (adj.length ? ' : ' + adj.join(', ') : '') + '.' + (hit && hit.length ? ' Ambiance : ' + hit.join(', ').toLowerCase() + '.' : ''),
-    metriques: {cap: lc, x: lx, asc: la + 30, desc: -220}, glyphes: {}, donneur: {id: L.id, sx: sx, d: d, r: 0, xD: lx, aD: la, xT: lx, aT: la, xh: 100, st: 0}});
+  var p = {nom: label + ' ' + letter, categorie: label, metriques: {cap: lc, x: lx, asc: la + 30, desc: -220}, glyphes: {}, donneur: {id: L.id, sx: sx, d: d, r: 0, xD: lx, aD: la, xT: lx, aT: la, xh: 100, st: 0}};
+  if(R) adj = adj.concat(applyPrecisions(p, R));
+  p.description = 'Construite sur la structure de ' + L.nom + ' ' + L.graisse + ', police libre sous licence OFL' + (adj.length ? ' : ' + adj.join(', ') : '') + '.' + (hit && hit.length ? ' Ambiance : ' + hit.join(', ').toLowerCase() + '.' : '');
+  return prep(p);
 }
 $('gen').onclick = async function(){
   var st = $('gen-status'), btn = this;
@@ -1380,14 +1496,22 @@ $('gen').onclick = async function(){
   try {
     await loadLib();
     var fams = sel.famille.filter(function(f){ return REFS[f]; }), moods = sel.ambiance.filter(function(m){ return MOODS[m]; });
-    var want = {Fine: 200, Normale: 400, Grasse: 700, Noire: 900}[sel.graisse[0]] || 0, sx = {'Étroite': 0.82, Large: 1.22}[sel.largeur[0]] || 1;
-    var pk = pickRefs(fams, moods, want || 400, genRound), picks = pk.picks;
+    var want = {Fine: 200, Normale: 400, Grasse: 700, Noire: 900}[sel.graisse[0]] || 0, sx = {'Étroite': 0.82, Normale: 1, Large: 1.22}[sel.largeur[0]] || 0;
+    /* the written precisions complete the chips : a chip always wins over a word that says the opposite */
+    var R = readPrecisions($('precisions').value), over = [];
+    if(R.fams.length){ if(fams.length){ if(R.fams.some(function(f){ return fams.indexOf(f) < 0; })) over.push('famille'); } else fams = R.fams.slice(0, 4); }
+    if(!fams.length && R.fonts.length) Object.keys(REFS).forEach(function(f){ if(R.fonts.some(function(n){ return REFS[f].indexOf(n) >= 0; }) && fams.indexOf(f) < 0) fams.push(f); });
+    R.moods.forEach(function(m){ if(moods.indexOf(m) < 0) moods.push(m); });
+    if(R.w){ if(want){ if((R.w > 400) !== (want > 400)) over.push('graisse'); } else want = R.w; }
+    if(R.sx){ if(sx){ if((R.sx > 1) !== (sx > 1)) over.push('largeur'); } else sx = R.sx; }
+    sx = sx || 1;
+    var pk = pickRefs(fams, moods, want || 400, genRound, R.fonts), picks = pk.picks;
     genRound++;
     await ensureFonts(picks.map(function(p){ return p.e[0]; }));
-    var list = picks.filter(function(p){ return LIBMAP[p.e[0]]; }).map(function(p, n){ return pisteFrom(LIBMAP[p.e[0]], p.fam, 'ABCD'.charAt(n), want, sx, p.hit); });
+    var list = picks.filter(function(p){ return LIBMAP[p.e[0]]; }).map(function(p, n){ return pisteFrom(LIBMAP[p.e[0]], p.fam, 'ABCD'.charAt(n), want, sx, p.hit, R); });
     if(!list.length) throw new Error('lib');
     pistes = list; pistesAreExamples = false; renderPistes(); save();
-    setStatus(st, list.length + ' pistes construites par calcul sur de vraies polices libres, sans IA. Choisis celle à développer, ou relance pour en voir d\'autres.' + (moods.length ? ' Ambiance prise en compte (' + moods.join(', ').toLowerCase() + ') : les polices de référence étiquetées ainsi passent en premier.' : '') + (pk.missed.length ? ' Aucune police de référence « ' + pk.missed.join(' », « ') + ' » n\'est étiquetée pour cette ambiance : famille gardée telle quelle.' : '') + ($('precisions').value.trim() ? ' Tes précisions écrites ne servent qu\'au dessin par l\'IA.' : ''));
+    setStatus(st, list.length + ' pistes construites par calcul sur de vraies polices libres, sans IA. Choisis celle à développer, ou relance pour en voir d\'autres.' + (moods.length ? ' Ambiance prise en compte (' + moods.join(', ').toLowerCase() + ') : les polices de référence étiquetées ainsi passent en premier.' : '') + (pk.missed.length ? ' Aucune police de référence « ' + pk.missed.join(' », « ') + ' » n\'est étiquetée pour cette ambiance : famille gardée telle quelle.' : '') + (R.seen.length ? ' Tes précisions écrites sont prises en compte par le code (détail sous le brief).' : R.rest.length ? ' Aucun mot de tes précisions n\'a d\'effet sur le calcul (détail sous le brief).' : '') + (over.length ? ' Pour la ' + over.join(' et la ') + ', tes pastilles priment sur le texte.' : '') + (R.wa || R.con ? ' Dans l\'atelier, le curseur « caractère » dose le contraste et l\'irrégularité.' : ''));
   } catch(e){ setStatus(st, 'La bibliothèque de polices n\'a pas pu être chargée. Recharge la page et réessaie.', 'err'); }
   finally { btn.disabled = false; }
 };
@@ -1412,7 +1536,7 @@ $('x-go').onclick = async function(){
     await ensureFonts([A.donneur.id, B.donneur.id]);
     var LA = LIBMAP[A.donneur.id], LB = LIBMAP[B.donneur.id]; if(!LA || !LB) throw new Error('lib');
     var D = JSON.parse(JSON.stringify(A.donneur)); D.mix = {id: LB.id, t: 50, dA: D.d, d: B.donneur.d, xD: B.donneur.xD, aD: B.donneur.aD}; D.d = 0; D.sty = null; D.st = 0;
-    addPiste(prep({nom: 'Croisement ' + crossLetter(), categorie: A.categorie === B.categorie ? A.categorie : 'Croisement', description: 'Croisement par calcul de deux structures libres (licence OFL) : ' + LA.nom + ' ' + LA.graisse + ' et ' + LB.nom + ' ' + LB.graisse + '. Chaque lettre est la forme intermédiaire entre les deux.', metriques: A.metriques, glyphes: {}, donneur: D}));
+    addPiste(prep({nom: 'Croisement ' + crossLetter(), categorie: A.categorie === B.categorie ? A.categorie : 'Croisement', description: 'Croisement par calcul de deux structures libres (licence OFL) : ' + LA.nom + ' ' + LA.graisse + ' et ' + LB.nom + ' ' + LB.graisse + '. Chaque lettre est la forme intermédiaire entre les deux.', inclinaison: A.inclinaison, espacement: A.espacement, metriques: A.metriques, glyphes: {}, donneur: D}));
     setStatus(st, 'Croisement ajouté aux pistes, à parts égales. Développe-le : le curseur « Croisement » de l\'atelier règle la part de chaque structure.' + (A.categorie !== B.categorie ? ' Ces deux structures ne sont pas de la même famille : certaines lettres peuvent se déformer ou s\'affiner.' : ''));
   } catch(e){ setStatus(st, 'La bibliothèque de polices n\'a pas pu être chargée. Recharge la page et réessaie.', 'err'); }
   finally { renderCross(); }
@@ -1436,8 +1560,8 @@ $('x-own').onclick = async function(){
     if(!Y.gain){ setStatus(st, 'Aucune de tes lettres détourées (' + Object.keys(tcl).join(' ') + ') n\'existe dans cette structure : rien à mesurer.', 'err'); return; }
     if(!has){ setStatus(st, 'Aucun trait de style mesurable à reporter sur cette piste avec ces lettres (' + Object.keys(tcl).join(' ') + ').', 'err'); return; }
     var D = JSON.parse(JSON.stringify(A.donneur)); D.sty = Y; D.st = 100;
-    addPiste(prep({nom: (A.nom + ', à ta main').slice(0, 40), categorie: A.categorie, description: A.description.replace(/ Caractère de tes lettres.*$/, '') + ' Caractère de tes lettres (' + Object.keys(tcl).join(' ') + ') reporté par mesure.', metriques: A.metriques, glyphes: {}, donneur: D}));
-    setStatus(st, styleNote(Y).replace('sur la donneuse', 'sur la piste').replace('Curseur « caractère de tes lettres » pour doser.', 'Développe la nouvelle piste : le curseur « caractère de tes lettres » de l\'atelier dose le report.'));
+    addPiste(prep({nom: (A.nom + ', à ta main').slice(0, 40), categorie: A.categorie, description: A.description.replace(/ Caractère de tes lettres.*$/, '') + ' Caractère de tes lettres (' + Object.keys(tcl).join(' ') + ') reporté par mesure.', inclinaison: A.inclinaison, espacement: A.espacement, metriques: A.metriques, glyphes: {}, donneur: D}));
+    setStatus(st, styleNote(Y).replace('sur la donneuse', 'sur la piste').replace('Curseur « caractère reporté » pour doser.', 'Développe la nouvelle piste : le curseur « caractère reporté » de l\'atelier dose le report.'));
   } catch(e){ setStatus(st, 'La bibliothèque de polices n\'a pas pu être chargée. Recharge la page et réessaie.', 'err'); }
   finally { this.disabled = false; }
 };
@@ -1522,7 +1646,7 @@ async function runGroups(base, groups){
 }
 function develop(p){
   if(p.donneur){
-    font = prep(JSON.parse(JSON.stringify({nom: p.nom, categorie: p.categorie, description: p.description, metriques: p.metriques, glyphes: {}, donneur: p.donneur})));
+    font = prep(JSON.parse(JSON.stringify({nom: p.nom, categorie: p.categorie, description: p.description, inclinaison: p.inclinaison, espacement: p.espacement, metriques: p.metriques, glyphes: {}, donneur: p.donneur})));
     fontIsExample = false; missing = []; cache = {}; $('fname').value = font.nom; $('try').value = $('mot').value.trim() || 'VIEWZ';
     renderAtelier(); save(); $('atelier').scrollIntoView({behavior: 'smooth', block: 'start'});
     setStatus($('dev-status'), p.donneur.mix ? 'Alphabet complet, croisé entre deux structures libres. Le curseur « Croisement » règle la part de la seconde structure, les curseurs « Donneuse » la graisse, la largeur, la hauteur d\'x et l\'arrondi.' : 'Alphabet complet, repris de la structure de la police libre. Les curseurs « Donneuse » règlent la graisse, la largeur, la hauteur d\'x et l\'arrondi.');
@@ -1788,7 +1912,7 @@ function styleNote(Y){
   if(Y.sl) t.push('inclinaison (' + (Y.sl > 0 ? '+' : '') + Math.round(Math.atan(Y.sl) * 180 / Math.PI) + '°)');
   if(Y.f) t.push('déformation d\'ensemble des formes');
   if(!t.length) return 'Aucun trait de style mesurable à reporter sur la donneuse avec ces lettres.';
-  return 'Caractère de tes lettres reporté sur la donneuse : ' + t.join(', ') + (Y.gain && Y.gain[1] > Y.gain[0] ? ' (recouvrement mesuré : ' + String(Y.gain[0]).replace('.', ',') + ' % puis ' + String(Y.gain[1]).replace('.', ',') + ' %)' : '') + '. Curseur « caractère de tes lettres » pour doser.';
+  return 'Caractère de tes lettres reporté sur la donneuse : ' + t.join(', ') + (Y.gain && Y.gain[1] > Y.gain[0] ? ' (recouvrement mesuré : ' + String(Y.gain[0]).replace('.', ',') + ' % puis ' + String(Y.gain[1]).replace('.', ',') + ' %)' : '') + '. Curseur « caractère reporté » pour doser.';
 }
 /* shared by « Reconstruire un alphabet complet » and « Chercher la police existante la plus proche » : same measurement, no AI */
 async function runMatch(btn, find){
