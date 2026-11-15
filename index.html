@@ -243,7 +243,7 @@ footer{margin-top:40px;padding-top:12px;border-top:1px solid var(--line);font:40
       </div>
       <div class="status" id="exp-status" role="status"></div>
       <details class="sheet"><summary style="cursor:pointer;font-weight:600">Tous les glyphes</summary><div class="glyphs" id="glyphs" style="margin-top:12px"></div></details>
-      <p style="font-size:13px;color:var(--muted);max-width:70ch;margin:0">Chaque lettre est un squelette tracé par l'IA, habillé par une plume réglable. Le fichier exporté est une vraie police installable, avec les accents français. C'est une base de travail : pour un usage professionnel, prévois une retouche des courbes et des approches dans Glyphs ou FontForge.</p>
+      <p style="font-size:13px;color:var(--muted);max-width:70ch;margin:0">Selon la piste, les lettres viennent d'une police libre ajustée par calcul, d'un croisement de deux structures, de tes lettres détourées ou d'un tracé de l'IA habillé par une plume réglable. Le fichier exporté est une vraie police installable, avec les accents français. C'est une base de travail : pour un usage professionnel, prévois une retouche des courbes et des approches dans Glyphs ou FontForge.</p>
     </section>
   </div>
 </main>
@@ -1179,11 +1179,11 @@ function renderAll(){ renderPistes(); renderAtelier(); }
    Each family of the brief points to reference fonts of the library (Google Fonts, OFL).
    A piste is one of them, adjusted by measure to the weight and width asked for. */
 var REFS = {
-  'Linéale': ['Inter', 'Work Sans', 'Manrope', 'Archivo', 'Public Sans', 'Figtree', 'DM Sans', 'Sora', 'Hanken Grotesk', 'Barlow', 'Rubik', 'Karla'],
+  'Linéale': ['Inter', 'Work Sans', 'Manrope', 'Archivo', 'Public Sans', 'Figtree', 'DM Sans', 'Sora', 'Hanken Grotesk', 'Barlow', 'Rubik', 'Karla', 'Space Grotesk', 'Exo 2', 'Orbitron', 'Oxanium', 'Rajdhani', 'Chakra Petch', 'Michroma', 'Tektur', 'Jura', 'Bebas Neue', 'Anton', 'Oswald', 'Archivo Black', 'Staatliches', 'League Gothic', 'Russo One', 'Fredoka', 'Nunito', 'Quicksand', 'Comfortaa', 'Varela Round'],
   'Géométrique': ['Poppins', 'Montserrat', 'Jost', 'Outfit', 'Urbanist', 'Questrial', 'Lexend', 'Raleway', 'Kumbh Sans', 'League Spartan', 'Red Hat Display', 'Syne'],
-  'Empattements': ['EB Garamond', 'Cormorant Garamond', 'Lora', 'Merriweather', 'Libre Baskerville', 'Crimson Pro', 'Source Serif 4', 'Spectral', 'Fraunces', 'Newsreader', 'Literata', 'Vollkorn'],
-  'Mécane': ['Zilla Slab', 'Arvo', 'Rokkitt', 'Bitter', 'Alfa Slab One', 'Josefin Slab', 'Hepta Slab', 'Crete Round', 'Bevan', 'Slabo 27px'],
-  'Didone': ['Playfair Display', 'Bodoni Moda', 'Abril Fatface', 'DM Serif Display', 'Prata', 'Rozha One', 'Chonburi', 'Gloock', 'Oranienbaum', 'Playfair'],
+  'Empattements': ['EB Garamond', 'Cormorant Garamond', 'Lora', 'Merriweather', 'Libre Baskerville', 'Crimson Pro', 'Source Serif 4', 'Spectral', 'Fraunces', 'Newsreader', 'Literata', 'Vollkorn', 'Cormorant', 'IM Fell English', 'Old Standard TT', 'Sorts Mill Goudy', 'Goudy Bookletter 1911', 'Gilda Display', 'Bellefair'],
+  'Mécane': ['Zilla Slab', 'Arvo', 'Rokkitt', 'Bitter', 'Alfa Slab One', 'Josefin Slab', 'Hepta Slab', 'Crete Round', 'Bevan', 'Slabo 27px', 'Rye', 'Sancreek', 'Vast Shadow'],
+  'Didone': ['Playfair Display', 'Bodoni Moda', 'Abril Fatface', 'DM Serif Display', 'Prata', 'Rozha One', 'Chonburi', 'Gloock', 'Oranienbaum', 'Playfair', 'Yeseva One', 'Antic Didone', 'Old Standard TT'],
   'Médiévale gothique': ['UnifrakturMaguntia', 'Grenze Gotisch', 'Pirata One', 'UnifrakturCook', 'Texturina', 'New Rocker', 'Manufacturing Consent', 'Fruktur', 'Germania One', 'Metal Mania', 'Almendra', 'Astloch', 'MedievalSharp', 'Kings'],
   'Onciale': ['Uncial Antiqua', 'Macondo', 'Eagle Lake', 'Metamorphous', 'Macondo Swash Caps', 'Cinzel Decorative', 'Quintessential', 'Milonga', 'Almendra Display', 'Caudex'],
   'Chancelière': ['Tangerine', 'Pinyon Script', 'Great Vibes', 'Italianno', 'Petit Formal Script', 'Alex Brush', 'Allura', 'Cormorant Upright', 'Felipa', 'Niconne', 'Rouge Script', 'Lovers Quarrel'],
@@ -1194,6 +1194,51 @@ var REFS = {
   'Stencil': ['Stardos Stencil', 'Allerta Stencil', 'Saira Stencil One', 'Black Ops One', 'Big Shoulders Stencil', 'Sirin Stencil', 'Stick No Bills', 'Emblema One', 'Wallpoet', 'Keania One', 'Plaster'],
   'Monospace': ['JetBrains Mono', 'IBM Plex Mono', 'Space Mono', 'Roboto Mono', 'Source Code Pro', 'Fira Code', 'Courier Prime', 'Inconsolata', 'DM Mono', 'Anonymous Pro', 'Cutive Mono', 'Share Tech Mono']
 };
+/* ambiance of each reference font, labelled by hand (an editorial reading, not a measure).
+   E élégante, B brute, O organique, F futuriste, R rétro, L luxe, U ludique, S sacrée, V urbaine */
+var MOODS = {'Élégante': 'E', 'Brute': 'B', 'Organique': 'O', 'Futuriste': 'F', 'Rétro': 'R', 'Luxe': 'L', 'Ludique': 'U', 'Sacrée': 'S', 'Urbaine': 'V'};
+var TAGS = {
+  'Work Sans': 'V', 'Manrope': 'F', 'Archivo': 'BV', 'Figtree': 'U', 'DM Sans': 'E', 'Sora': 'F', 'Barlow': 'V', 'Rubik': 'OU', 'Karla': 'R',
+  'Space Grotesk': 'FV', 'Exo 2': 'F', 'Orbitron': 'F', 'Oxanium': 'F', 'Rajdhani': 'F', 'Chakra Petch': 'F', 'Michroma': 'F', 'Tektur': 'FB', 'Jura': 'FE',
+  'Bebas Neue': 'BV', 'Anton': 'BV', 'Oswald': 'V', 'Archivo Black': 'BV', 'Staatliches': 'BV', 'League Gothic': 'BVR', 'Russo One': 'BF',
+  'Fredoka': 'UO', 'Nunito': 'OU', 'Quicksand': 'OU', 'Comfortaa': 'OUF', 'Varela Round': 'O',
+  'Poppins': 'U', 'Montserrat': 'V', 'Jost': 'ER', 'Outfit': 'F', 'Urbanist': 'FV', 'Questrial': 'E', 'Raleway': 'EL', 'League Spartan': 'BV', 'Red Hat Display': 'F', 'Syne': 'FV',
+  'EB Garamond': 'ELS', 'Cormorant Garamond': 'ELS', 'Lora': 'EO', 'Libre Baskerville': 'ER', 'Crimson Pro': 'E', 'Spectral': 'EL', 'Fraunces': 'ORU', 'Newsreader': 'E', 'Vollkorn': 'OS',
+  'Cormorant': 'ELS', 'IM Fell English': 'RS', 'Old Standard TT': 'RE', 'Sorts Mill Goudy': 'ER', 'Goudy Bookletter 1911': 'R', 'Gilda Display': 'EL', 'Bellefair': 'EL',
+  'Zilla Slab': 'V', 'Arvo': 'R', 'Rokkitt': 'RB', 'Alfa Slab One': 'BRV', 'Josefin Slab': 'ER', 'Hepta Slab': 'B', 'Crete Round': 'O', 'Bevan': 'BR', 'Rye': 'RB', 'Sancreek': 'R', 'Vast Shadow': 'R',
+  'Playfair Display': 'EL', 'Bodoni Moda': 'EL', 'Abril Fatface': 'LR', 'DM Serif Display': 'EL', 'Prata': 'EL', 'Rozha One': 'LB', 'Chonburi': 'RU', 'Gloock': 'LR', 'Oranienbaum': 'ER', 'Playfair': 'EL', 'Yeseva One': 'LR', 'Antic Didone': 'EL',
+  'UnifrakturMaguntia': 'S', 'Grenze Gotisch': 'BV', 'Pirata One': 'BV', 'UnifrakturCook': 'BS', 'Texturina': 'ES', 'New Rocker': 'BV', 'Manufacturing Consent': 'RV', 'Fruktur': 'UO', 'Germania One': 'BV', 'Metal Mania': 'BV', 'Almendra': 'ESO', 'Astloch': 'EF', 'MedievalSharp': 'US', 'Kings': 'ELS',
+  'Uncial Antiqua': 'S', 'Macondo': 'UO', 'Eagle Lake': 'ES', 'Metamorphous': 'S', 'Macondo Swash Caps': 'UO', 'Cinzel Decorative': 'LSE', 'Quintessential': 'EO', 'Milonga': 'RO', 'Almendra Display': 'ES', 'Caudex': 'S',
+  'Tangerine': 'EL', 'Pinyon Script': 'EL', 'Great Vibes': 'EL', 'Italianno': 'E', 'Petit Formal Script': 'ELR', 'Alex Brush': 'EO', 'Allura': 'E', 'Cormorant Upright': 'ELS', 'Felipa': 'ES', 'Niconne': 'RU', 'Rouge Script': 'ER', 'Lovers Quarrel': 'EO',
+  'Caveat': 'OU', 'Kalam': 'O', 'Patrick Hand': 'U', 'Indie Flower': 'U', 'Shadows Into Light': 'OU', 'Handlee': 'O', 'Gloria Hallelujah': 'U', 'Reenie Beanie': 'BV', 'Architects Daughter': 'U', 'Covered By Your Grace': 'BV',
+  'Caveat Brush': 'OB', 'Kaushan Script': 'OV', 'Pacifico': 'RU', 'Knewave': 'BV', 'Lobster': 'RU', 'Damion': 'R', 'Marck Script': 'EO', 'Mansalva': 'BV', 'Nothing You Could Do': 'O',
+  'Sedgwick Ave Display': 'BV', 'Sedgwick Ave': 'V', 'Bangers': 'UV', 'Finger Paint': 'UO', 'Londrina Solid': 'UV', 'Protest Guerrilla': 'BV', 'Protest Revolution': 'BV', 'Rammetto One': 'UR', 'Bungee': 'V', 'Faster One': 'FR',
+  'Poiret One': 'ELR', 'Limelight': 'LR', 'Federo': 'ER', 'Monoton': 'RF', 'Fascinate': 'RU', 'Josefin Sans': 'ER', 'Forum': 'ES', 'Cinzel': 'LS', 'Marcellus': 'ELS', 'Italiana': 'EL', 'Megrim': 'F', 'Tenor Sans': 'E', 'Julius Sans One': 'EL', 'Righteous': 'RF', 'Diplomata': 'LR',
+  'Stardos Stencil': 'R', 'Allerta Stencil': 'V', 'Saira Stencil One': 'FV', 'Black Ops One': 'BV', 'Big Shoulders Stencil': 'BV', 'Sirin Stencil': 'E', 'Stick No Bills': 'BV', 'Emblema One': 'RF', 'Wallpoet': 'F', 'Keania One': 'FB', 'Plaster': 'BF',
+  'JetBrains Mono': 'F', 'IBM Plex Mono': 'F', 'Space Mono': 'FR', 'Fira Code': 'F', 'Courier Prime': 'R', 'DM Mono': 'E', 'Anonymous Pro': 'R', 'Cutive Mono': 'R', 'Share Tech Mono': 'F'
+};
+function moodsOf(nom, moods){ var t = TAGS[nom] || ''; return moods.filter(function(m){ return t.indexOf(MOODS[m]) >= 0; }); }
+/* four reference fonts for the brief : inside each family, the fonts that carry the ambiances asked for come first (most ambiances first).
+   Returns {picks: [{e, fam, hit}], missed: [families without any font labelled for these ambiances]} */
+function pickRefs(fams, moods, want, round){
+  var all = Object.keys(REFS), have = function(n){ return !!refEntry(n, want); }, auto = !fams.length;
+  var listOf = function(fam){
+    var refs = REFS[fam].filter(have), hit = moods.length ? refs.filter(function(n){ return moodsOf(n, moods).length; }) : [];
+    hit = hit.map(function(n, i){ return [n, i]; }).sort(function(a, b){ return moodsOf(b[0], moods).length - moodsOf(a[0], moods).length || a[1] - b[1]; }).map(function(x){ return x[0]; });
+    return {fam: fam, list: hit.length ? hit : refs, ok: !!hit.length, n: hit.length};
+  };
+  var lists;
+  if(auto){
+    var cand = all.map(listOf); if(moods.length && cand.some(function(l){ return l.ok; })) cand = cand.filter(function(l){ return l.ok; }).map(function(l, i){ return [l, i]; }).sort(function(a, b){ return b[0].n - a[0].n || a[1] - b[1]; }).map(function(x){ return x[0]; });
+    lists = []; for(var k = 0; k < 4 && k < cand.length; k++) lists.push(cand[(round * 4 + k * (moods.length ? 1 : 3) + (moods.length ? 0 : 1)) % cand.length]);
+  } else lists = fams.map(listOf);
+  var picks = [], used = {};
+  for(var i = 0; i < 4; i++){
+    var l = lists[i % lists.length], turn = Math.floor(i / lists.length) + round;
+    for(var j = 0; j < l.list.length; j++){ var nom = l.list[(turn + j) % l.list.length]; if(!used[nom]){ used[nom] = 1; picks.push({e: refEntry(nom, want), fam: l.fam, hit: moodsOf(nom, moods)}); break; } }
+  }
+  return {picks: picks, missed: moods.length ? lists.filter(function(l){ return !l.ok; }).map(function(l){ return l.fam; }).filter(function(f, i, a){ return a.indexOf(f) === i; }) : []};
+}
 var genRound = 0;
 /* the library entry of a family whose weight is the closest to the one asked for */
 function refEntry(nom, want){
@@ -1201,7 +1246,7 @@ function refEntry(nom, want){
   IDX.fonts.forEach(function(f){ if(f[1] === nom && (!best || Math.abs(f[2] - want) < Math.abs(best[2] - want))) best = f; });
   return best;
 }
-function pisteFrom(L, label, letter, want, sx){
+function pisteFrom(L, label, letter, want, sx, hit){
   var lg = function(c){ return libGlyph(L, c); }, lx = topOf(lg, 'x') || topOf(lg, XL), la = topOf(lg, 'l') || topOf(lg, AL), lc = topOf(lg, 'H') || topOf(lg, CL_);
   if(!isFinite(lx)) lx = isFinite(lc) ? lc * 0.7 : 500; if(!isFinite(la)) la = isFinite(lc) ? lc : lx * 1.4; if(!(la > lx + 20)) la = lx + 20; if(!isFinite(lc)) lc = la;
   /* what the real font cannot give (no such weight in the library) is added by measure : kept moderate so that counters stay open */
@@ -1209,7 +1254,7 @@ function pisteFrom(L, label, letter, want, sx){
   if(Math.abs(d) < 5) d = 0;
   if(d) adj.push(d > 0 ? 'graisse renforcée' : 'graisse allégée');
   if(sx !== 1) adj.push(sx < 1 ? 'chasse resserrée' : 'chasse élargie');
-  return prep({nom: label + ' ' + letter, categorie: label, description: 'Construite sur la structure de ' + L.nom + ' ' + L.graisse + ', police libre sous licence OFL' + (adj.length ? ' : ' + adj.join(', ') : '') + '.',
+  return prep({nom: label + ' ' + letter, categorie: label, description: 'Construite sur la structure de ' + L.nom + ' ' + L.graisse + ', police libre sous licence OFL' + (adj.length ? ' : ' + adj.join(', ') : '') + '.' + (hit && hit.length ? ' Ambiance : ' + hit.join(', ').toLowerCase() + '.' : ''),
     metriques: {cap: lc, x: lx, asc: la + 30, desc: -220}, glyphes: {}, donneur: {id: L.id, sx: sx, d: d, r: 0, xD: lx, aD: la, xT: lx, aT: la, xh: 100, st: 0}});
 }
 $('gen').onclick = async function(){
@@ -1217,21 +1262,15 @@ $('gen').onclick = async function(){
   btn.disabled = true; setStatus(st, 'Recherche de quatre structures dans la bibliothèque de polices libres', 'busy');
   try {
     await loadLib();
-    var all = Object.keys(REFS), fams = sel.famille.filter(function(f){ return REFS[f]; });
-    if(!fams.length) for(var k = 0; k < 4; k++) fams.push(all[(genRound * 4 + k * 3 + 1) % all.length]);
+    var fams = sel.famille.filter(function(f){ return REFS[f]; }), moods = sel.ambiance.filter(function(m){ return MOODS[m]; });
     var want = {Fine: 200, Normale: 400, Grasse: 700, Noire: 900}[sel.graisse[0]] || 0, sx = {'Étroite': 0.82, Large: 1.22}[sel.largeur[0]] || 1;
-    var picks = [], used = {};
-    for(var i = 0; i < 4; i++){
-      var fam = fams[i % fams.length], refs = REFS[fam], turn = Math.floor(i / fams.length) + genRound, e = null;
-      for(var j = 0; j < refs.length && !e; j++){ var nom = refs[(turn + j) % refs.length]; if(!used[nom]){ e = refEntry(nom, want || 400); if(e) used[nom] = 1; } }
-      if(e) picks.push({e: e, fam: fam});
-    }
+    var pk = pickRefs(fams, moods, want || 400, genRound), picks = pk.picks;
     genRound++;
     await ensureFonts(picks.map(function(p){ return p.e[0]; }));
-    var list = picks.filter(function(p){ return LIBMAP[p.e[0]]; }).map(function(p, n){ return pisteFrom(LIBMAP[p.e[0]], p.fam, 'ABCD'.charAt(n), want, sx); });
+    var list = picks.filter(function(p){ return LIBMAP[p.e[0]]; }).map(function(p, n){ return pisteFrom(LIBMAP[p.e[0]], p.fam, 'ABCD'.charAt(n), want, sx, p.hit); });
     if(!list.length) throw new Error('lib');
     pistes = list; pistesAreExamples = false; renderPistes(); save();
-    setStatus(st, list.length + ' pistes construites par calcul sur de vraies polices libres, sans IA. Choisis celle à développer, ou relance pour en voir d\'autres.' + (sel.ambiance.length || $('precisions').value.trim() ? ' L\'ambiance et tes précisions ne servent qu\'au dessin par l\'IA.' : ''));
+    setStatus(st, list.length + ' pistes construites par calcul sur de vraies polices libres, sans IA. Choisis celle à développer, ou relance pour en voir d\'autres.' + (moods.length ? ' Ambiance prise en compte (' + moods.join(', ').toLowerCase() + ') : les polices de référence étiquetées ainsi passent en premier.' : '') + (pk.missed.length ? ' Aucune police de référence « ' + pk.missed.join(' », « ') + ' » n\'est étiquetée pour cette ambiance : famille gardée telle quelle.' : '') + ($('precisions').value.trim() ? ' Tes précisions écrites ne servent qu\'au dessin par l\'IA.' : ''));
   } catch(e){ setStatus(st, 'La bibliothèque de polices n\'a pas pu être chargée. Recharge la page et réessaie.', 'err'); }
   finally { btn.disabled = false; }
 };
