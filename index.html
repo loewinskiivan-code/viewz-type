@@ -805,7 +805,72 @@ function stPhase(n){ var x = Math.sin(n * 12.9898) * 43758.5453; return (x - Mat
 /* Y: measured style {th, sl, wa, f}. k: strength (1 = as measured). Each part can be switched off through on = {th, sl, wa, f}. */
 function holesOf(P){ return P.filter(function(p){ var a = 0; for(var i = 0; i < p.length; i++){ var q = p[(i + 1) % p.length]; a += p[i][0] * q[1] - q[0] * p[i][1]; } return a < 0; }).length; }
 /* a change of stroke weight breaks a letter when a counter closes up or a stroke splits */
-function thPass(src, dh, dv){ var r = fattenXY(src, dh, dv); return r.length > 0 && holesOf(r) >= holesOf(src) && r.length <= src.length; }
+function clipNZ(a, b, type){
+  var CL = ClipperLib, c = new CL.Clipper(), sol = new CL.Paths(), A = toClip(a), B = toClip(b);
+  if(A.length) c.AddPaths(A, CL.PolyType.ptSubject, true);
+  if(B.length) c.AddPaths(B, CL.PolyType.ptClip, true);
+  c.Execute(type, sol, CL.PolyFillType.pftNonZero, CL.PolyFillType.pftNonZero);
+  return fromClip(sol);
+}
+function outersOf(P){ return P.length - holesOf(P); }
+/* Thinning that spares the fine joins. A plain inward offset removes the same amount everywhere, so the joins that are
+   already thin (arch into stem, wall between two counters, hairline of a contrasted letter) vanish long before the stems
+   reach the measured weight. Here the thin bridges between two thick parts are found first (what an opening of the shape
+   removes, when it touches the thick remainder in two places or more), then they are thinned only down to a floor,
+   with a short taper where they enter the thick part. Corners and free stroke ends are not bridges : they follow the stems. */
+var THFLOOR = 30, THLEV = 8;
+function thinXY(src, dh, dv){
+  var E = fattenXY(src, dh, dv), D = Math.max(-dh, -dv);
+  if(D < 3 || !src.length) return E;
+  var CT = ClipperLib.ClipType, nh = Math.min(dh, 0), nv = Math.min(dv, 0), step = D / THLEV;
+  var open = function(r){ return fatten(fatten(src, -r), r); };
+  var outers = function(P){ return P.filter(function(z){ var a = 0; for(var i = 0; i < z.length; i++){ var q = z[(i + 1) % z.length]; a += z[i][0] * q[1] - q[0] * z[i][1]; } return a > 0; }); };
+  /* everything that would end up thinner than the floor ; a zone is a bridge when it touches the thick remainder in two places */
+  /* the floor is lowered once when the stems themselves get close to it (condensed black faces) */
+  var B = [], FL = 0;
+  [THFLOOR, THFLOOR / 2].some(function(fl){
+    var O = open(D + fl / 2); if(!O.length) return false;
+    B = outers(clipNZ(src, O, CT.ctDifference)).filter(function(z){ return outersOf(clipNZ(fatten([z], 2.5), O, CT.ctIntersection)) >= 2; });
+    FL = fl; return B.length > 0;
+  });
+  if(!B.length) return E;
+  /* what must survive of each bridge : thin parts whole, thicker parts brought down to the floor */
+  var K = [];
+  for(var j = 0; j < THLEV; j++){
+    var Zj = clipNZ(clipNZ(src, open(j * step + FL / 2), CT.ctDifference), B, CT.ctIntersection); if(!Zj.length) continue;
+    K = K.concat(j ? clipNZ(fattenXY(src, nh * j / THLEV, nv * j / THLEV), Zj, CT.ctIntersection) : Zj);
+  }
+  if(!K.length) return E;
+  /* a kept piece must really link two places of the thinned letter : corner chips and free ends are dropped */
+  K = outers(clipNZ(K, [], CT.ctUnion)).filter(function(z){ return outersOf(clipNZ(fatten([z], 1.3 * D + 6), E, CT.ctIntersection)) >= 2; });
+  if(!K.length) return E;
+  /* each point of the outline bites into the letter by the full amount, or by its distance to the nearest bridge if that is
+     less : the outline next to a bridge bites less and less, and the bridge keeps its place in one piece with the stems */
+  var KE = []; K.forEach(function(p){ for(var i = 0; i < p.length; i++) KE.push([p[i], p[(i + 1) % p.length]]); });
+  var dK = function(q){ var best = D * D; for(var e = 0; e < KE.length; e++){ var a = KE[e][0], b = KE[e][1], ex = b[0] - a[0], ey = b[1] - a[1], l = ex * ex + ey * ey, t = l ? Math.max(0, Math.min(1, ((q[0] - a[0]) * ex + (q[1] - a[1]) * ey) / l)) : 0, dx = a[0] + t * ex - q[0], dy = a[1] + t * ey - q[1], dd = dx * dx + dy * dy; if(dd < best) best = dd; } return Math.sqrt(best); };
+  var rx = (-nh - nv / 6) / D, ry = (-nv - nh / 6) / D, NG = 10, cs = [], bites = [];
+  for(var g = 0; g < NG; g++) cs.push([Math.cos(6.2832 * g / NG), Math.sin(6.2832 * g / NG)]);
+  var hull = function(pts){
+    pts.sort(function(a, b){ return a[0] - b[0] || a[1] - b[1]; });
+    var cr = function(o, a, b){ return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]); }, lo = [], up = [], i;
+    for(i = 0; i < pts.length; i++){ while(lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], pts[i]) <= 0) lo.pop(); lo.push(pts[i]); }
+    for(i = pts.length - 1; i >= 0; i--){ while(up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], pts[i]) <= 0) up.pop(); up.push(pts[i]); }
+    lo.pop(); up.pop(); return lo.concat(up);
+  };
+  src.forEach(function(p){
+    var d = densify(p, 9), ev = d.map(dK);
+    for(var i = 0; i < d.length; i++){
+      var k = (i + 1) % d.length, e0 = ev[i], e1 = ev[k]; if(e0 < 0.7 && e1 < 0.7) continue;
+      var pts = []; cs.forEach(function(c){ pts.push([d[i][0] + c[0] * e0 * rx, d[i][1] + c[1] * e0 * ry], [d[k][0] + c[0] * e1 * rx, d[k][1] + c[1] * e1 * ry]); });
+      var h = hull(pts); if(h.length > 2) bites.push(h);
+    }
+  });
+  var R = clipNZ(src, bites, CT.ctDifference);
+  /* away from the bridges, the plain thinning is kept as it is, so that all letters are thinned the same way */
+  R = clipNZ(E, clipNZ(R, fatten(K, 2 * D + FL), CT.ctIntersection), CT.ctUnion);
+  return fromClip(ClipperLib.Clipper.CleanPolygons(toClip(R), 0.4 * S));
+}
+function thPass(src, dh, dv){ var r = thinXY(src, dh, dv); return r.length > 0 && holesOf(r) >= holesOf(src) && r.length <= src.length; }
 /* the strongest weight change, up to k, that the witness letters of the font all stand (one letter may fail) :
    the same dose is then given to every letter, so that the weight stays even across the font */
 var THSAFE = {key: '', lv: {}, base: null}, THTEST = 'abdeghkmnpqrsuwxyzABEGHKMNRS';
@@ -832,7 +897,7 @@ function stylize(polys, Y, k, seed, xT, on, kt){
     var hv = thHV(Y.th), kk = kt === undefined ? k : kt;
     /* last resort for a letter outside the witness set : its own weight change is halved until it stands */
     if(kt !== undefined) while(kk > 0.12 && !thPass(polys, kk * hv[0], kk * hv[1])) kk /= 2;
-    polys = fattenXY(polys, kk * hv[0], kk * hv[1]); if(!polys.length) return src;
+    polys = thinXY(polys, kk * hv[0], kk * hv[1]); if(!polys.length) return src;
   }
   var b = pbox(polys), bw = (b.x1 - b.x0) || 1, useF = on.f && Y.f && (b.y1 - b.y0) > 0.45 * xT, sl = on.sl ? Y.sl : 0, out = [];
   if(!useF && !(on.wa && Y.wa)) out = sl ? polys.map(function(p){ return p.map(function(q){ return [q[0] + k * sl * q[1], q[1]]; }); }) : polys;
