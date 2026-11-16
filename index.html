@@ -881,11 +881,14 @@ function findEnds(p, Wm){
     ta = [ta[0] / la, ta[1] / la]; tb = [tb[0] / lb, tb[1] / lb];
     if(-(ta[0] * tb[0] + ta[1] * tb[1]) < 0.72) return;
     var u = [ta[0] - tb[0], ta[1] - tb[1]], lu = Math.hypot(u[0], u[1]); u = [u[0] / lu, u[1] / lu];
-    var ax = Math.max(Math.abs(u[0]), Math.abs(u[1])); if(ax < 0.883) return;
+    var ax = Math.max(Math.abs(u[0]), Math.abs(u[1]));
     var cls = Math.abs(u[1]) >= Math.abs(u[0]) ? (u[1] > 0 ? 'u' : 'd') : (u[0] > 0 ? 'r' : 'l'), n = [u[1], -u[0]];
     if((cls === 'u' || cls === 'd') ? n[0] < 0 : n[1] < 0) n = [-n[0], -n[1]];
-    var W = Math.abs((B[0] - A[0]) * n[0] + (B[1] - A[1]) * n[1]); if(W < 14 || W < 0.35 * Wm || W > 1.9 * Wm) return;
-    var E = {cls: cls, u: u, n: n, W: W, M: [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2], a0: (((k - g) % m) + m) % m * h, a1: (((e + g) % m) + m) % m * h}, env = [], cnt = 0;
+    var W = Math.abs((B[0] - A[0]) * n[0] + (B[1] - A[1]) * n[1]), H = W; if(W < 14 || W < 0.35 * Wm || W > 1.9 * Wm) return;
+    /* a diagonal stroke (v, w, x, k) is read across the horizontal (or the vertical for a flat diagonal), not across its own
+       width : its usual cut, parallel to the baseline, then reads as a straight cut, like the foot of a stem */
+    if(ax < 0.883){ n = (cls === 'u' || cls === 'd') ? [1, 0] : [0, 1]; var det0 = n[0] * u[1] - n[1] * u[0]; W = Math.abs(((B[0] - A[0]) * u[1] - (B[1] - A[1]) * u[0]) / det0); }
+    var E = {cls: cls, u: u, n: n, W: W, H: H, diag: ax < 0.883, M: [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2], a0: (((k - g) % m) + m) % m * h, a1: (((e + g) % m) + m) % m * h}, env = [], cnt = 0;
     for(x = k - g; x <= e + g; x++){ var P = at(x), sh = endSH(E, P), bi = Math.round((clamp(sh[0], -1, 1, 0) + 1) * (TK - 1) / 2); if(env[bi] === undefined || sh[1] > env[bi]) env[bi] = sh[1]; }
     for(x = 0; x < TK; x++) if(env[x] !== undefined) cnt++;
     if(cnt < 5) return;
@@ -895,7 +898,7 @@ function findEnds(p, Wm){
   });
   return ends.length ? {ends: ends, d: d, acc: acc, L: L} : null;
 }
-function endSH(E, P){ var dx = P[0] - E.M[0], dy = P[1] - E.M[1]; return [(dx * E.n[0] + dy * E.n[1]) / (E.W / 2), (dx * E.u[0] + dy * E.u[1]) / E.W]; }
+function endSH(E, P){ var dx = P[0] - E.M[0], dy = P[1] - E.M[1], det = E.n[0] * E.u[1] - E.n[1] * E.u[0]; return [(dx * E.u[1] - dy * E.u[0]) / det / (E.W / 2), (E.n[0] * dy - E.n[1] * dx) / det / E.H]; }
 function profAt(pr, s){ var x = (clamp(s, -1, 1, 0) + 1) * (TK - 1) / 2, i = Math.min(TK - 2, Math.floor(x)); return pr[i] + (pr[i + 1] - pr[i]) * (x - i); }
 /* profiles of the stroke ends of a set of letters, per direction ; a direction that these letters do not show takes the
    roundness of the others and, between top and bottom, the opposite bevel (the cut of one same pen) */
@@ -925,7 +928,7 @@ function reshapeEnds(polys, tm, k){
       var P = d[i], a = acc[i], isV = src < p.length && P[0] === p[src][0] && P[1] === p[src][1]; if(isV) src++;
       var E = null; for(var x = 0; x < ends.length; x++){ var e = ends[x]; if(e.a0 <= e.a1 ? (a >= e.a0 && a <= e.a1) : (a >= e.a0 || a <= e.a1)){ E = e; break; } }
       if(!E){ if(isV) res.push(P); continue; }
-      var sh = endSH(E, P), tH = E.hm + profAt(tm[E.cls], sh[0]) / 100, dl = k * (tH - sh[1]) * E.W;
+      var sh = endSH(E, P), tH = E.hm + profAt(tm[E.cls], sh[0]) / 100, dl = k * (tH - sh[1]) * E.H;
       res.push([P[0] + E.u[0] * dl, P[1] + E.u[1] * dl]); touched = true;
     }
     return res.length > 2 ? res : p;
