@@ -1,0 +1,30 @@
+name: Proposer une amélioration
+description: Une idée, un manque, une fonction que tu aimerais trouver (feature request)
+title: "[Idée] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci pour ton idée. Réponds simplement, en français ou en anglais.
+  - type: textarea
+    id: besoin
+    attributes:
+      label: Ce que tu cherches à faire
+      description: Décris le besoin avant la solution.
+      placeholder: "Exemple : je voudrais retrouver une police à partir d'une photo prise de travers."
+    validations:
+      required: true
+  - type: textarea
+    id: idee
+    attributes:
+      label: Ce que tu proposes
+    validations:
+      required: false
+  - type: input
+    id: pratique
+    attributes:
+      label: Ton métier ou ta pratique
+      placeholder: "Graphiste, calligraphe, brodeuse, étudiant..."
+    validations:
+      required: false

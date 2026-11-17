@@ -47,7 +47,9 @@ L'app charge trois bibliothèques depuis un CDN : opentype.js (MIT), JSZip (MIT 
 
 ## Contribuer
 
-Les propositions sont bienvenues : ouvre une « issue » pour signaler un défaut ou une idée, ou une « pull request » pour proposer une modification.
+VIEWZ Type est une première version et les retours la font avancer. Ouvre une « issue » pour signaler un défaut ou proposer une idée (des modèles te guident), ou une « pull request » pour proposer une modification. Le détail est dans [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Pas de compte GitHub ? Écris à contact@viewz-studio.com ou en message sur Instagram à @viewz.lab.
 
 ## Mentions
 
