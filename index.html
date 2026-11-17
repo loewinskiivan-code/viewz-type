@@ -111,7 +111,7 @@ footer{margin-top:40px;padding-top:12px;border-top:1px solid var(--line);font:40
 <!-- ============ RECHERCHE ============ -->
 <main id="view-recherche">
   <h2>Retrouver une <i>typographie</i> à partir d'une image</h2>
-  <p class="lead">Dépose une photo ou une capture d'écran d'un texte. L'IA lit les lettres, nomme la police la plus probable et te propose les familles Google Fonts les plus ressemblantes, gratuites et utilisables en commercial.</p>
+  <p class="lead">Dépose une photo ou une capture d'écran d'un texte. L'app te propose les polices Google Fonts les plus ressemblantes, gratuites et utilisables en commercial. Sans clé d'IA, tape les lettres visibles dans l'image : la recherche se fait par mesure des formes. Avec une clé (Réglages IA, en bas de page), l'IA lit les lettres et nomme la police la plus probable.</p>
   <div class="stack">
     <div class="drop" id="drop">
       <img id="shot" alt="Image à analyser" hidden>
@@ -122,6 +122,9 @@ footer{margin-top:40px;padding-top:12px;border-top:1px solid var(--line);font:40
         <button class="accent" id="analyze" type="button" disabled>Identifier la typographie</button>
       </div>
     </div>
+    <label class="f">Lettres visibles dans l'image, dans l'ordre de lecture (nécessaire sans clé d'IA, ex. SUD SAUVAGE)
+      <input type="text" id="id-letters" autocomplete="off" autocapitalize="off" spellcheck="false">
+    </label>
     <label class="f">Précision facultative (ex. logo d'un restaurant, affiche années 50)
       <input type="text" id="note" autocomplete="off">
     </label>
@@ -1264,7 +1267,7 @@ $('id-text').oninput = function(){ var t = this.value || 'Typographie'; document
 var lastId = null;
 $('analyze').onclick = async function(){
   var st = $('id-status'), btn = this, sample = await getSample();
-  if(!sample){ setStatus(st, NO_AI, 'err'); return; }
+  if(!sample){ return measureSearch(st, btn); }
   var lim = await sample.limits().catch(function(){ return null; });
   if(!lim || !lim.images){ setStatus(st, errMsg({code: 'images_unavailable'}), 'err'); return; }
   btn.disabled = true; setStatus(st, 'Analyse des lettres en cours (30 à 60 secondes)', 'busy');
@@ -1280,6 +1283,29 @@ $('analyze').onclick = async function(){
   } catch(e){ setStatus(st, errMsg(e), 'err'); }
   finally { btn.disabled = false; }
 };
+/* Rechercher sans clé d'IA : même mesure que l'onglet Reproduire, à partir des lettres tapées par l'utilisateur */
+async function measureSearch(st, btn){
+  var letters = $('id-letters').value.replace(/\s/g, '');
+  if(!letters){ setStatus(st, "Tape d'abord les lettres visibles dans l'image dans le champ « Lettres visibles dans l'image », puis relance. La recherche se fait alors par mesure, sans IA.", 'err'); $('id-letters').focus(); return; }
+  if(!shotFile) return;
+  btn.disabled = true; setStatus(st, 'Détourage des lettres', 'busy');
+  try {
+    var f = shotFile; traceFile = null; setTrace(f);
+    for(var i = 0; i < 100 && traceFile !== f; i++) await new Promise(function(r){ setTimeout(r, 100); });
+    if(traceFile !== f){ setStatus(st, 'Image illisible. Essaie un JPG ou un PNG.', 'err'); return; }
+    await new Promise(function(r){ setTimeout(r, 150); });
+    var n = shapes.length, want = Array.from(letters).length;
+    $('r-order').value = letters; $('r-order').oninput();
+    $('r-matches').innerHTML = ''; setStatus(st, 'Mesure des polices les plus proches (quelques secondes)', 'busy');
+    await runMatch($('r-find'), true);
+    var html = $('r-matches').innerHTML;
+    if(!html){ setStatus(st, ($('r-status').textContent || 'Aucune lettre exploitable trouvée dans cette image.') + " Tu peux ajuster le détourage dans l'onglet Reproduire.", 'err'); return; }
+    $('match-title').textContent = 'Polices les plus proches, par mesure'; $('matches').innerHTML = html;
+    setStatus(st, 'Classement mesuré, sans IA : pourcentage de recouvrement entre les lettres de ton image et celles de chaque police.' + (n !== want ? ' Attention : ' + n + ' formes trouvées pour ' + want + ' lettres tapées. Si le résultat te semble faux, cadre plus serré sur le texte ou ajuste le détourage dans l\'onglet Reproduire.' : ''));
+    $('match-title').scrollIntoView({behavior: 'smooth', block: 'start'});
+  } catch(e){ setStatus(st, errMsg(e), 'err'); }
+  finally { btn.disabled = false; }
+}
 function showId(r){
   var pr = r.probable || {}, w = Math.round(clamp(r.graisse, 100, 900, 400) / 100) * 100;
   $('id-facts').innerHTML = '<div><dt>Police la plus probable</dt><dd>' + esc(pr.nom || 'Non déterminée') + (pr.fonderie ? ' <span style="font:400 13px var(--body);color:var(--muted)">' + esc(pr.fonderie) + '</span>' : '') + '</dd></div><div><dt>Confiance</dt><dd>' + Math.round(clamp(pr.confiance, 0, 100, 0)) + ' %</dd></div><div><dt>Classification</dt><dd>' + esc(r.classification || '') + '</dd></div>';

@@ -26,7 +26,7 @@ puis ouvre `http://localhost:8000`.
 
 ## Avec ou sans IA
 
-- **Sans clé** : détourage, recherche par mesure, reconstruction et export fonctionnent entièrement dans le navigateur.
+- **Sans clé** : détourage, recherche par mesure, reconstruction et export fonctionnent entièrement dans le navigateur. Dans l'onglet Rechercher, il suffit de taper les lettres visibles dans l'image pour lancer la recherche par mesure.
 - **Avec clé** : le bloc « Réglages IA », en bas de page, permet de coller sa propre clé d'API Anthropic et de choisir le modèle. La clé reste dans le navigateur de l'utilisateur et n'est envoyée qu'à l'API Anthropic. Les appels sont facturés sur le compte de l'utilisateur. Un compte en « zéro rétention de données » peut voir ces appels refusés.
 
 ## Structure
