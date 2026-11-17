@@ -1,0 +1,63 @@
+name: Signaler un défaut
+description: Quelque chose ne fonctionne pas comme prévu (bug report)
+title: "[Défaut] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci de prendre le temps de signaler ce défaut. Réponds simplement, en français ou en anglais.
+        Ne colle jamais de clé d'API dans ce formulaire.
+  - type: dropdown
+    id: onglet
+    attributes:
+      label: Onglet concerné
+      options:
+        - Rechercher
+        - Reproduire
+        - Créer
+        - Export .otf
+        - Réglages IA
+        - Autre ou je ne sais pas
+    validations:
+      required: true
+  - type: textarea
+    id: etapes
+    attributes:
+      label: Ce que tu as fait
+      description: Les étapes, dans l'ordre, pour retrouver le problème.
+      placeholder: |
+        1. J'ai ouvert l'onglet Reproduire
+        2. J'ai déposé une image de trois lettres
+        3. J'ai cliqué sur...
+    validations:
+      required: true
+  - type: textarea
+    id: attendu
+    attributes:
+      label: Ce que tu attendais
+    validations:
+      required: true
+  - type: textarea
+    id: obtenu
+    attributes:
+      label: Ce qui s'est passé
+      description: Tu peux glisser ici une capture d'écran et l'image utilisée.
+    validations:
+      required: true
+  - type: input
+    id: appareil
+    attributes:
+      label: Appareil et navigateur
+      placeholder: "Exemple : Mac, Safari 18. Ou : téléphone Android, Chrome."
+    validations:
+      required: true
+  - type: dropdown
+    id: ia
+    attributes:
+      label: Utilisais-tu une clé d'API (fonctions IA) ?
+      options:
+        - Non, sans clé
+        - Oui, avec ma clé
+    validations:
+      required: false
